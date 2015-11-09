@@ -259,6 +259,7 @@ SET (tfc_HEADERS
 SET (tfc_SOURCES
   ByteArray.cpp
   Encode.cpp
+  MifParse.cpp
   main.cpp
 )
 
