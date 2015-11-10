@@ -2,24 +2,21 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <locale>
 
 #include "MifParse.hpp"
 
 namespace TFC {
 
-using std::ifstream;
-
-std::string MifParse::fileSlurp() {
-  std::string res;
-  std::stringstream resStream(res);
+string MifParse::fileSlurp() {
+  string res;
+  stringstream resStream(res);
   ifstream file(filename);
 
   if (!file.is_open()) {
     throw std::exception();
   }
 
-  std::string line;
+  string line;
 
   while (file.good()) {
     getline(file, line);
@@ -71,11 +68,11 @@ void MifParse::readSpaces() {
   }
 }
 
-std::string MifParse::readWord() {
+string MifParse::readWord() {
   readSpaces();
 
-  std::string res;
-  std::stringstream ss(res);
+  string res;
+  stringstream ss(res);
 
   while (filedata.good()) {
     char next = filedata.peek();
@@ -89,7 +86,7 @@ std::string MifParse::readWord() {
   return res;
 }
 
-void MifParse::consumeString(std::string const& toConsume) {
+void MifParse::consumeString(string const& toConsume) {
   for (char consume : toConsume) {
     if (consume != filedata.get())
       throw std::exception();
@@ -156,7 +153,7 @@ MifParse::DataRadix MifParse::readRadix() {
 ByteArray MifParse::parseMif() {
   ByteArray res;
 
-  filedata = std::stringstream(fileSlurp());
+  filedata = stringstream(fileSlurp());
 
   bitdepth = 0;
   width = 0;
@@ -164,7 +161,7 @@ ByteArray MifParse::parseMif() {
   dataRadix = DataRadix::Invalid;
 
   while (filedata.good()) {
-    std::string token = readWord();
+    string token = readWord();
 
     consumeString("=");
     if (token == "DEPTH") {
@@ -183,7 +180,7 @@ ByteArray MifParse::parseMif() {
       size_t consumedWords = 0;
 
       while (consumedWords < bitdepth) {
-        // XXX left off here
+        
       }
 
       consumeString("END;");

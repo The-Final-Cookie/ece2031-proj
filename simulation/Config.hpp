@@ -16,6 +16,7 @@
 #include <stdexcept>
 #include <atomic>
 #include <string>
+#include <locale>
 
 namespace TFC {
 
@@ -27,6 +28,10 @@ using std::cin;
 using std::endl;
 
 using std::size_t;
+
+using std::string;
+using std::stringstream;
+using std::ifstream;
 
 using std::swap;
 using std::move;

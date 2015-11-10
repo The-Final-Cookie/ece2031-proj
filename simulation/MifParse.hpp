@@ -7,7 +7,7 @@ namespace TFC {
 
 class MifParse {
 public:
-  MifParse(std::string const& filename) : filename(filename) {}
+  MifParse(string const& filename) : filename(filename) {}
   ByteArray parseMif();
 
 private:
@@ -19,19 +19,21 @@ private:
     Uns,  // Unsigned decimal
   };
 
-  std::string fileSlurp();
+  string fileSlurp();
 
   void readMultilineComment();
   void readSinglelineComment();
   void readSpaces();
-  std::string readWord();
+  string readWord();
   int readInt(DataRadix radix);
   DataRadix readRadix();
 
-  void consumeString(std::string const& toConsume);
+  void consumeString(string const& toConsume);
 
-  std::string filename;
-  std::stringstream filedata;
+  Optional<size_t> consumeAddressEntry();
+
+  string filename;
+  stringstream filedata;
   
   size_t bitdepth;
   size_t width;
