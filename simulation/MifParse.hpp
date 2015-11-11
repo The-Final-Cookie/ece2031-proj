@@ -1,7 +1,7 @@
 #ifndef MIF_PARSE_HPP
 #define MIF_PARSE_HPP
 
-#include "ByteArray.hpp"
+#include "Config.hpp"
 
 namespace TFC {
 
