@@ -2,6 +2,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <bitset>
 
 #include "MifParse.hpp"
 
@@ -98,8 +99,59 @@ bool MifParse::consumeAddressEntry() {
   char next = filedata.peek();
 
   if (next == '[') {
+    consumeString("[");
+    int startAddress = readInt(addressRadix);
+    readSpaces();
+    consumeString("..");
+    readSpaces();
+    int endAddress = readInt(addressRadix);
+    readSpaces();
+    consumeString("]");
+    readSpaces();
+    consumeString(":");
+    readSpaces();
 
+    if (startAddress < 0 || endAddress <= startAddress)
+      throw std::exception();
+
+    // now read in each entry
+    next = filedata.peek();
+    std::vector<int> addressData;
+    while (next != ';' && filedata.good()) {
+      addressData.push_back(readInt(dataRadix));
+      readSpaces();
+    }
+
+    for (size_t offset = 0; offset < (size_t) (endAddress - startAddress); ++offset) {
+      result[offset + startAddress] = addressData[offset % addressData.size()];
+    }
+  } else {
+    int startAddress = readInt(addressRadix);
+    readSpaces();
+    consumeString(":");
+    readSpaces();
+
+    next = filedata.peek();
+    std::vector<int> addressData;
+    while (next != ';' && filedata.good()) {
+      addressData.push_back(readInt(dataRadix));
+      readSpaces();
+    }
+
+    for (size_t offset = 0; offset < addressData.size(); ++offset) {
+      result[offset + startAddress] = addressData[offset];
+    }
   }
+
+  consumeString(";");
+  readSpaces();
+
+  string filedataString = filedata.str();
+  size_t offset = filedata.tellg();
+  if (filedataString.substr(offset, 3) == "END")
+    return true;
+
+  return false;
 }
 
 int MifParse::readInt(DataRadix radix) {
@@ -159,9 +211,7 @@ MifParse::DataRadix MifParse::readRadix() {
   }
 }
 
-ByteArray MifParse::parseMif() {
-  ByteArray res;
-
+std::vector<int> MifParse::parseMif() {
   filedata = stringstream(fileSlurp());
 
   bitdepth = 0;
@@ -184,7 +234,7 @@ ByteArray MifParse::parseMif() {
     } else if (token == "CONTENT") {
       consumeString("BEGIN");
 
-      res.fill(bitdepth*width, '\0');
+      result.resize(bitdepth*width);
 
       while (true) {
         auto endReached = consumeAddressEntry();
@@ -202,7 +252,7 @@ ByteArray MifParse::parseMif() {
     consumeString(";");
   }
 
-  return res;
+  return result;
 }
 
 }

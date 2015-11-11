@@ -5,10 +5,12 @@
 
 namespace TFC {
 
+// This code is pretty hacky and manual.  That's ok, I'm not going for some sort of prize or anything.  Not my best work though...
+
 class MifParse {
 public:
   MifParse(string const& filename) : filename(filename) {}
-  ByteArray parseMif();
+  std::vector<int> parseMif();
 
 private:
   enum class DataRadix {
@@ -40,6 +42,7 @@ private:
   DataRadix addressRadix;
   DataRadix dataRadix;
 
+  std::vector<int> result;
 };
 
 }
