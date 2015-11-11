@@ -253,7 +253,6 @@ SET (tfc_HEADERS
   Config.hpp
   Encode.hpp
   MifParse.hpp
-  Optional.hpp
 )
 
 SET (tfc-sim_SOURCES
