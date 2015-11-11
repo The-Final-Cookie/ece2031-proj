@@ -93,6 +93,15 @@ void MifParse::consumeString(string const& toConsume) {
   }
 }
 
+bool MifParse::consumeAddressEntry() {
+  readSpaces();
+  char next = filedata.peek();
+
+  if (next == '[') {
+
+  }
+}
+
 int MifParse::readInt(DataRadix radix) {
   int res;
   switch (radix) {
@@ -177,10 +186,11 @@ ByteArray MifParse::parseMif() {
 
       res.fill(bitdepth*width, '\0');
 
-      size_t consumedWords = 0;
-
-      while (consumedWords < bitdepth) {
-        
+      while (true) {
+        auto endReached = consumeAddressEntry();
+        if (endReached) {
+          break;
+        }
       }
 
       consumeString("END;");

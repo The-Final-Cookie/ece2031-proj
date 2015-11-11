@@ -1,7 +1,9 @@
 #ifndef OPTIONAL_HPP
 #define OPTIONAL_HPP
 
-namespace TLC {
+#include "Config.hpp"
+
+namespace TFC {
 
 template<typename T>
 class Optional {
@@ -364,14 +366,6 @@ std::ostream& operator<<(std::ostream& os, Optional<T> const& v) {
     return os << "Just (" << *v << ")";
   else
     return os << "Nothing";
-}
-
-template<typename T>
-size_t hash<Optional<T>>::operator()(Optional<T> const& m) const {
-  if (!m)
-    return 0;
-  else
-    return hasher(*m);
 }
 
 }

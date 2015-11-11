@@ -30,7 +30,7 @@ private:
 
   void consumeString(string const& toConsume);
 
-  Optional<size_t> consumeAddressEntry();
+  bool consumeAddressEntry();
 
   string filename;
   stringstream filedata;
