@@ -3,6 +3,7 @@
 
 #include "Config.hpp"
 #include <sstream>
+#include <vector>
 
 namespace TFC {
 
