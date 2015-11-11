@@ -2,6 +2,7 @@
 #define MIF_PARSE_HPP
 
 #include "Config.hpp"
+#include <sstream>
 
 namespace TFC {
 
@@ -11,6 +12,7 @@ class MifParse {
 public:
   MifParse(string const& filename) : filename(filename) {}
   std::vector<int> parseMif();
+  size_t getWidth() const;
 
 private:
   enum class DataRadix {

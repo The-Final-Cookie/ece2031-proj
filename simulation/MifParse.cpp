@@ -10,8 +10,7 @@
 namespace TFC {
 
 string MifParse::fileSlurp() {
-  string res;
-  stringstream resStream(res);
+  stringstream resStream("");
   ifstream file(filename);
 
   if (!file.is_open()) {
@@ -22,12 +21,12 @@ string MifParse::fileSlurp() {
 
   while (file.good()) {
     getline(file, line);
-    resStream << line;
+    resStream << line << endl;
   }
 
   file.close();
 
-  return res;
+  return resStream.str();
 }
 
 // Each of the following functions leave the iterator past the thing it is
@@ -73,25 +72,26 @@ void MifParse::readSpaces() {
 string MifParse::readWord() {
   readSpaces();
 
-  string res;
-  stringstream ss(res);
+  stringstream ss("");
 
   while (filedata.good()) {
     char next = filedata.peek();
-    if (isalnum(next)) {
-      ss << filedata.get();
+    if (isalnum(next) || next == '_') {
+      ss << (char)filedata.get();
     } else {
       break;
     }
   }
 
-  return res;
+  return ss.str();
 }
 
 void MifParse::consumeString(string const& toConsume) {
   for (char consume : toConsume) {
-    if (consume != filedata.get())
+    char nextChar = filedata.get();
+    if (consume != nextChar) {
       throw std::exception();
+    }
   }
 }
 
@@ -121,6 +121,7 @@ bool MifParse::consumeAddressEntry() {
     while (next != ';' && filedata.good()) {
       addressData.push_back(readInt(dataRadix));
       readSpaces();
+      next = filedata.peek();
     }
 
     for (size_t offset = 0; offset < (size_t) (endAddress - startAddress); ++offset) {
@@ -137,6 +138,7 @@ bool MifParse::consumeAddressEntry() {
     while (next != ';' && filedata.good()) {
       addressData.push_back(readInt(dataRadix));
       readSpaces();
+      next = filedata.peek();
     }
 
     for (size_t offset = 0; offset < addressData.size(); ++offset) {
@@ -160,7 +162,10 @@ int MifParse::readInt(DataRadix radix) {
   switch (radix) {
     case DataRadix::Bin:
       {
-        std::bitset<sizeof(int)> temp(filedata.str(), 0, width);
+        filedata >> std::dec >> res;
+        stringstream ss("");
+        ss << res;
+        std::bitset<sizeof(int)> temp(ss.str(), 0, width);
         res = temp.to_ulong();
       }
       break;
@@ -189,6 +194,7 @@ int MifParse::readInt(DataRadix radix) {
 }
 
 MifParse::DataRadix MifParse::readRadix() {
+  readSpaces();
   char type = filedata.get();
   switch (type) {
     case 'B':
@@ -197,15 +203,15 @@ MifParse::DataRadix MifParse::readRadix() {
 
     case 'H':
       consumeString("EX");
-      return DataRadix::Bin;
+      return DataRadix::Hex;
 
     case 'D':
       consumeString("EC");
-      return DataRadix::Bin;
+      return DataRadix::Dec;
 
     case 'U':
       consumeString("NS");
-      return DataRadix::Bin;
+      return DataRadix::Uns;
 
     default:
       throw std::exception();
@@ -213,7 +219,8 @@ MifParse::DataRadix MifParse::readRadix() {
 }
 
 std::vector<int> MifParse::parseMif() {
-  filedata = stringstream(fileSlurp());
+  std::string filecontents = fileSlurp();
+  filedata = stringstream(filecontents);
 
   bitdepth = 0;
   width = 0;
@@ -223,14 +230,18 @@ std::vector<int> MifParse::parseMif() {
   while (filedata.good()) {
     string token = readWord();
 
-    consumeString("=");
+    readSpaces();
     if (token == "DEPTH") {
+      consumeString("=");
       bitdepth = readInt(DataRadix::Uns);
     } else if (token == "WIDTH") {
+      consumeString("=");
       width = readInt(DataRadix::Uns);
     } else if (token == "ADDRESS_RADIX") {
+      consumeString("=");
       addressRadix = readRadix();
     } else if (token == "DATA_RADIX") {
+      consumeString("=");
       dataRadix = readRadix();
     } else if (token == "CONTENT") {
       consumeString("BEGIN");
@@ -240,12 +251,12 @@ std::vector<int> MifParse::parseMif() {
       while (true) {
         auto endReached = consumeAddressEntry();
         if (endReached) {
+          consumeString("END;");
           break;
         }
       }
 
-      consumeString("END;");
-      break; // content is always last
+      break;
     } else {
       throw std::exception();
     }
@@ -254,6 +265,10 @@ std::vector<int> MifParse::parseMif() {
   }
 
   return result;
+}
+
+size_t MifParse::getWidth() const {
+  return width;
 }
 
 }
