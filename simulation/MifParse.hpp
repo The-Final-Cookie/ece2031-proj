@@ -1,14 +1,16 @@
 #ifndef MIF_PARSE_HPP
 #define MIF_PARSE_HPP
 
-#include "ByteArray.hpp"
+#include "Config.hpp"
 
 namespace TFC {
+
+// This code is pretty hacky and manual.  That's ok, I'm not going for some sort of prize or anything.  Not my best work though...
 
 class MifParse {
 public:
   MifParse(string const& filename) : filename(filename) {}
-  ByteArray parseMif();
+  std::vector<int> parseMif();
 
 private:
   enum class DataRadix {
@@ -30,7 +32,7 @@ private:
 
   void consumeString(string const& toConsume);
 
-  Optional<size_t> consumeAddressEntry();
+  bool consumeAddressEntry();
 
   string filename;
   stringstream filedata;
@@ -40,6 +42,7 @@ private:
   DataRadix addressRadix;
   DataRadix dataRadix;
 
+  std::vector<int> result;
 };
 
 }

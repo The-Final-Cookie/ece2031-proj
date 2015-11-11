@@ -250,18 +250,20 @@ ENDFOREACH (OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
 SET (tfc_HEADERS
   Algorithm.hpp
-  ByteArray.hpp
   Config.hpp
-  Encode.hpp
   MifParse.hpp
-  Optional.hpp
 )
 
-SET (tfc_SOURCES
-  ByteArray.cpp
-  Encode.cpp
+SET (tfc-sim_SOURCES
   MifParse.cpp
-  main.cpp
+  sim.cpp
 )
 
-ADD_EXECUTABLE (tfc-sim ${tfc_HEADERS} ${tfc_SOURCES})
+SET (tfc-parsemif_SOURCES
+  MifParse.cpp
+  parsemif.cpp
+)
+
+ADD_EXECUTABLE (tfc-sim ${tfc_HEADERS} ${tfc-sim_SOURCES})
+
+ADD_EXECUTABLE (tfc-parsemif ${tfc_HEADERS} ${tfc-parsemif_SOURCES})
