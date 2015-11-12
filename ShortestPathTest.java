@@ -12,12 +12,13 @@ public class ShortestPathTest {
     public static void main(String[] args) {
         Random rand = new Random();
 
-        //fill point array with 12 random points
-        Point[] allPoints = new Point[12];
+        //fill point array with 13 random points
+        Point[] allPoints = new Point[13];
 
-        for(int i = 0; i < allPoints.length; i++) {
-            int x = rand.nextInt(10) + 1;
-            int y = rand.nextInt(10) + 1;
+        allPoints[0] = new Point(5,5,1);
+        for(int i = 1; i < allPoints.length; i++) {
+                int x = rand.nextInt(10) + 1;
+                int y = rand.nextInt(10) + 1;
             allPoints[i] = new Point(x, y, i+1);
         }
 
@@ -37,7 +38,7 @@ public class ShortestPathTest {
 
 
         //CREATE reference distance 2-D array
-        int[][] distancesBetweenAllPoints = new int[12][12];
+        int[][] distancesBetweenAllPoints = new int[13][13];
         for(int i = 0; i < distancesBetweenAllPoints.length ; i++) {
             for(int j = 0 ; j < distancesBetweenAllPoints[0].length ; j++) {
                 distancesBetweenAllPoints[i][j] = pythagoreanDistance(allPoints[i], allPoints[j]);
@@ -59,7 +60,7 @@ public class ShortestPathTest {
 
         //we will assume that our starting value will be the first value entered in the allPoints array
 
-        Point[] orderPoints = new Point[12];
+        Point[] orderPoints = new Point[13];
         int currentIndex = 0;
         Point currentPoint = allPoints[currentIndex];
         orderPoints[0] = new Point(allPoints[currentIndex].getX(), allPoints[currentIndex].getY(), 1);
