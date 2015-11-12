@@ -248,14 +248,20 @@ FOREACH (OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
   SET (CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PROJECT_SOURCE_DIR}/../dist)
 ENDFOREACH (OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
-SET (tfc_HEADERS
+SET (tfc-sim_HEADERS
   Config.hpp
   MifParse.hpp
 )
 
 SET (tfc-sim_SOURCES
   MifParse.cpp
+  SComp.cpp
   sim.cpp
+)
+
+SET (tfc-parsemif_HEADERS
+  Config.hpp
+  MifParse.hpp
 )
 
 SET (tfc-parsemif_SOURCES
@@ -263,6 +269,6 @@ SET (tfc-parsemif_SOURCES
   parsemif.cpp
 )
 
-ADD_EXECUTABLE (tfc-sim ${tfc_HEADERS} ${tfc-sim_SOURCES})
+ADD_EXECUTABLE (tfc-sim ${tfc-sim_HEADERS} ${tfc-sim_SOURCES})
 
-ADD_EXECUTABLE (tfc-parsemif ${tfc_HEADERS} ${tfc-parsemif_SOURCES})
+ADD_EXECUTABLE (tfc-parsemif ${tfc-parsemif_HEADERS} ${tfc-parsemif_SOURCES})

@@ -1,3 +1,6 @@
+// For ECE2031 project
+// Written by Michael Reilly
+
 #ifndef MIF_PARSE_HPP
 #define MIF_PARSE_HPP
 

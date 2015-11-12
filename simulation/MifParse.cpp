@@ -1,3 +1,6 @@
+// For ECE2031 project
+// Written by Michael Reilly
+
 #include <cassert>
 #include <fstream>
 #include <sstream>

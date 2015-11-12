@@ -1,3 +1,6 @@
+// For ECE2031 project
+// Written by Michael Reilly
+
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
