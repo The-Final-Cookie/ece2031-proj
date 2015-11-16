@@ -64,15 +64,26 @@ WaitForUser:
 
 Main:
   OUT RESETPOS
-
+	CALL   UARTClear   ; empty the UART receive FIFO of any old data
   LOAD FSlow
-  OUT LVelCmd
-  OUT RVelCmd
+  STORE Speed
 
 WaitForFour:
-  LOAD FMid
+  LOAD Speed
   OUT LVelCmd
   OUT RVelCmd
+  CALL CountUp
+  IN XPOS
+  SUB TicksPerFourFeet
+  JPOS StopMotors
+  JUMP WaitForFour
+
+StopMotors:
+  LOAD Zero
+  STORE Speed
+  JUMP WaitUntilStopped
+
+CountUp:
   LOADI Ticks ; load the address of Ticks into mem
   ADD Offset  ; add the current offset
   STORE Ptr
@@ -88,7 +99,7 @@ WaitForFour:
   ADDI 1
   ISTORE Ptr
 
-  DontWrite:
+DontWrite:
   IN XPOS
   SUB LastTick
   JPOS SkipUpdate ; if we've gone a tick
@@ -98,14 +109,30 @@ WaitForFour:
   ADDI 2
   STORE Offset
 
-  SkipUpdate:
-  SUB TicksPerFourFeet
-  OUT LCD
-  JPOS Die
-  JUMP WaitForFour
+SkipUpdate:
+  RETURN
 
+; Just waits until 32k loops have happened, might not be long enough
+WaitUntilStopped:
+  LOAD Speed
+  OUT LVelCmd
+  OUT RVelCmd
+  CALL CountUp
+  LOAD CountDown
+  ADDI -1
+  STORE CountDown
+  JZERO Done
+  JUMP WaitUntilStopped
+
+CountDown: DW -1
 LastTick: DW 0
 Ptr: DW 0
+Speed: DW 0
+
+Done: ; now that we're done let's write out our memory
+  JUMP Die
+
+OffsetI: DW 0
 
 Die:
 ; Sometimes it's useful to permanently stop execution.
@@ -210,6 +237,117 @@ I2CError:
 	OUT    SSEG1
 	OUT    SSEG2       ; display error message
 	JUMP   I2CError
+
+; Subroutines to send AC value through the UART,
+; Calling UARTSend2 will send both bytes of AC
+; formatted for default base station code:
+; [ AC(15..8) | AC(7..0)]
+; Calling UARTSend1 will only send the low byte.
+; Note that special characters such as \lf are
+; escaped with the value 0x1B, thus the literal
+; value 0x1B must be sent as 0x1B1B, should it occur.
+UARTSend2:
+	STORE  UARTTemp
+	SHIFT  -8
+	ADDI   -27   ; escape character
+	JZERO  UEsc1
+	ADDI   27
+	OUT    UART_DAT
+	JUMP   USend2
+UEsc1:
+	ADDI   27
+	OUT    UART_DAT
+	OUT    UART_DAT
+USend2:
+	LOAD   UARTTemp
+UARTSend1:
+	AND    LowByte
+	ADDI   -27   ; escape character
+	JZERO  UEsc2
+	ADDI   27
+	OUT    UART_DAT
+	RETURN
+UEsc2:
+	ADDI   27
+	OUT    UART_DAT
+	OUT    UART_DAT
+	RETURN
+	UARTTemp: DW 0
+
+; Subroutine to send a newline to the computer log
+UARTNL:
+	LOAD   NL
+	OUT    UART_DAT
+	SHIFT  -8
+	OUT    UART_DAT
+	RETURN
+	NL: DW &H0A1B
+
+; Subroutine to send a space to the computer log
+UARTNBSP:
+	LOAD   NBSP
+	OUT    UART_DAT
+	SHIFT  -8
+	OUT    UART_DAT
+	RETURN
+	NBSP: DW &H201B
+
+; Subroutine to clear the internal UART receive FIFO.
+UARTClear:
+	IN     UART_DAT
+	JNEG   UARTClear
+	RETURN
+
+; Subroutine to tell the server that this position is one
+; of the destinations.  Use AC=0 for generic indication,
+; or AC=#1-12 for specific indication
+IndicateDest:
+	; AC contains which destination this is
+	AND    LowNibl    ; keep only #s 0-15
+	STORE  IDNumber
+	LOADI  1
+	STORE  IDFlag     ; set flag for indication
+	RETURN
+	IDNumber: DW 0
+	IDFlag: DW 0
+
+
+; Timer interrupt, used to send position data to the server
+CTimer_ISR:
+	CALL   UARTNL ; newline
+	IN     XPOS
+	CALL   UARTSend2
+	IN     YPOS
+	CALL   UARTSend2
+	LOAD   IDFlag ; check if user has request a destination indication
+	JPOS   CTIndicateDest ; if yes, do it; otherwise...
+	RETI   ; return from interrupt
+CTIndicateDest:
+	LOAD   IDNumber
+	CALL   UARTSend1 ; send the indicated destination
+	LOADI  0
+	STORE  IDFlag
+	RETI
+
+; Configure the interrupt timer and enable interrupts
+StartLog:
+	; See supporting information on the powersof2 site for how
+	; SCOMP's communication system works.
+	CALL   UARTNL      ; send a newline to separate data
+	LOADI  0
+	STORE  IDFlag      ; clear any pending flag
+	LOADI  50
+	OUT    CTIMER      ; configure timer for 0.01*50=0.5s interrupts
+	CLI    &B0010      ; clear any pending interrupt from timer
+	SEI    &B0010      ; enable interrupt from timer (source 1)
+	RETURN
+
+; Disable the interrupt timer and interrupts
+StopLog:
+	CLI    &B0010      ; disable interrupt source 1 (timer)
+	LOADI  0
+	OUT    CTIMER      ; reset configurable timer
+	RETURN
 
 ;***************************************************************
 ;* Variables
