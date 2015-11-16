@@ -62,6 +62,12 @@ WaitForUser:
 ;* Main code
 ;***************************************************************
 
+; Note to self
+; Need to change this to use LPOS and RPOS because they're updated at 12.5MHz,
+; instead of XPOS and YPOS which is only updated every .5 seconds.  Also need to
+; change this to use a 100 Hz timer, instead of dumping it based on presumed
+; clock cycle counts
+
 Main:
   OUT RESETPOS
 	CALL   UARTClear   ; empty the UART receive FIFO of any old data
