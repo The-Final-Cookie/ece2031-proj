@@ -33,6 +33,8 @@ void SComp::runState() {
 
   io_addr = ir & 0xFF;
 
+  updateIO();
+
   mem_addr = (state == State::FETCH) ? pc : ir & addressMask;
   io_cycle = (state == State::EX_IN ||
               state == State::EX_OUT2);
@@ -124,6 +126,277 @@ void SComp::runState() {
       throw std::exception();
       break;
   }
+}
+
+// We're going to perform IO updates prior to setting io_data, just because
+void SComp::updateIO() {
+  doIoWrite();
+  doIoRead();
+  doIoUpdate();
+}
+
+void SComp::doIoWrite() {
+  if (io_write && io_cycle) {
+    switch ((IOAddr)io_addr) {
+      case IOAddr::Switches:
+        // Do nothing
+        break;
+      case IOAddr::Leds:
+        m_io_redLeds = io_data;
+        break;
+      case IOAddr::Timer:
+        m_io_timer = io_data;
+        break;
+      case IOAddr::Xio:
+        // Do Nothing
+        break;
+      case IOAddr::Sseg1:
+        m_io_sevenSeg1 = io_data;
+        break;
+      case IOAddr::Sseg2:
+        m_io_sevenSeg1 = io_data;
+        break;
+      case IOAddr::Lcd:
+        m_io_lcd = io_data;
+        break;
+      case IOAddr::Xleds:
+        m_io_xleds = io_data;
+        break;
+      case IOAddr::Beep:
+        m_io_beep = io_data;
+        break;
+      case IOAddr::Ctimer:
+        m_io_ctimer = io_data;
+        break;
+      case IOAddr::Lpos:
+        // Do nothing
+        break;
+      case IOAddr::Lvel:
+        // Do nothing
+        break;
+      case IOAddr::Lvelcmd:
+        m_io_lvelcmd = io_data;
+        break;
+      case IOAddr::Rpos:
+        // Do nothing
+        break;
+      case IOAddr::Rvel:
+        // Do nothing
+        break;
+      case IOAddr::Rvelcmd:
+        m_io_rvelcmd = io_data;
+        break;
+      case IOAddr::I2c_cmd:
+        m_io_i2c_cmd = io_data;
+        break;
+      case IOAddr::I2c_data:
+        m_io_i2c_data = io_data;
+        break;
+      case IOAddr::I2c_rdy:
+        m_io_i2c_rdy = io_data;
+        break;
+      case IOAddr::Uart_dat:
+        m_io_uart_dat = io_data;
+        break;
+      case IOAddr::Uart_rdy:
+        m_io_uart_rdy = io_data;
+        break;
+      case IOAddr::Sonar:
+        // TODO: Does writing to this do anything?
+        //m_io_sonar = io_data;
+        break;
+      case IOAddr::Dist0:
+        // Do nothing
+        break;
+      case IOAddr::Dist1:
+        // Do nothing
+        break;
+      case IOAddr::Dist2:
+        // Do nothing
+        break;
+      case IOAddr::Dist3:
+        // Do nothing
+        break;
+      case IOAddr::Dist4:
+        // Do nothing
+        break;
+      case IOAddr::Dist5:
+        // Do nothing
+        break;
+      case IOAddr::Dist6:
+        // Do nothing
+        break;
+      case IOAddr::Dist7:
+        // Do nothing
+        break;
+      case IOAddr::Sonalarm:
+        m_io_sonalarm = io_data;
+        break;
+      case IOAddr::Sonarint:
+        m_io_sonarint = io_data;
+        break;
+      case IOAddr::Sonaren:
+        m_io_sonaren = io_data;
+        break;
+      case IOAddr::Xpos:
+        // Do Nothing
+        break;
+      case IOAddr::Ypos:
+        // Do Nothing
+        break;
+      case IOAddr::Theta:
+        // Do Nothing
+        break;
+      case IOAddr::Resetpos:
+        m_io_resetpos = 1;
+        break;
+      case IOAddr::Rin:
+        // Do Nothing
+        // Not implemented
+        break;
+      case IOAddr::Lin:
+        // Do Nothing
+        // Not implemented
+        break;
+      default:
+        // do nothing
+        break;
+    }
+  }
+}
+
+void SComp::doIoRead() {
+  if (!io_write && io_cycle) {
+    switch ((IOAddr)io_addr) {
+      case IOAddr::Switches:
+        io_data = m_io_switches;
+        break;
+      case IOAddr::Leds:
+        m_io_redLeds = io_data;
+        break;
+      case IOAddr::Timer:
+        m_io_timer = io_data;
+        break;
+      case IOAddr::Xio:
+        // Do Nothing
+        break;
+      case IOAddr::Sseg1:
+        m_io_sevenSeg1 = io_data;
+        break;
+      case IOAddr::Sseg2:
+        m_io_sevenSeg1 = io_data;
+        break;
+      case IOAddr::Lcd:
+        m_io_lcd = io_data;
+        break;
+      case IOAddr::Xleds:
+        m_io_xleds = io_data;
+        break;
+      case IOAddr::Beep:
+        m_io_beep = io_data;
+        break;
+      case IOAddr::Ctimer:
+        m_io_ctimer = io_data;
+        break;
+      case IOAddr::Lpos:
+        // Do nothing
+        break;
+      case IOAddr::Lvel:
+        // Do nothing
+        break;
+      case IOAddr::Lvelcmd:
+        m_io_lvelcmd = io_data;
+        break;
+      case IOAddr::Rpos:
+        // Do nothing
+        break;
+      case IOAddr::Rvel:
+        // Do nothing
+        break;
+      case IOAddr::Rvelcmd:
+        m_io_rvelcmd = io_data;
+        break;
+      case IOAddr::I2c_cmd:
+        m_io_i2c_cmd = io_data;
+        break;
+      case IOAddr::I2c_data:
+        m_io_i2c_data = io_data;
+        break;
+      case IOAddr::I2c_rdy:
+        m_io_i2c_rdy = io_data;
+        break;
+      case IOAddr::Uart_dat:
+        m_io_uart_dat = io_data;
+        break;
+      case IOAddr::Uart_rdy:
+        m_io_uart_rdy = io_data;
+        break;
+      case IOAddr::Sonar:
+        // TODO: Does writing to this do anything?
+        //m_io_sonar = io_data;
+        break;
+      case IOAddr::Dist0:
+        // Do nothing
+        break;
+      case IOAddr::Dist1:
+        // Do nothing
+        break;
+      case IOAddr::Dist2:
+        // Do nothing
+        break;
+      case IOAddr::Dist3:
+        // Do nothing
+        break;
+      case IOAddr::Dist4:
+        // Do nothing
+        break;
+      case IOAddr::Dist5:
+        // Do nothing
+        break;
+      case IOAddr::Dist6:
+        // Do nothing
+        break;
+      case IOAddr::Dist7:
+        // Do nothing
+        break;
+      case IOAddr::Sonalarm:
+        m_io_sonalarm = io_data;
+        break;
+      case IOAddr::Sonarint:
+        m_io_sonarint = io_data;
+        break;
+      case IOAddr::Sonaren:
+        m_io_sonaren = io_data;
+        break;
+      case IOAddr::Xpos:
+        // Do Nothing
+        break;
+      case IOAddr::Ypos:
+        // Do Nothing
+        break;
+      case IOAddr::Theta:
+        // Do Nothing
+        break;
+      case IOAddr::Resetpos:
+        m_io_resetpos = 1;
+        break;
+      case IOAddr::Rin:
+        // Do Nothing
+        // Not implemented
+        break;
+      case IOAddr::Lin:
+        // Do Nothing
+        // Not implemented
+        break;
+      default:
+        // do nothing
+        break;
+    }
+  }
+}
+
+void SComp::doIoUpdate() {
+  // TODO
 }
 
 void SComp::reset() {

@@ -278,7 +278,7 @@ I2C_CMD:  EQU &H90  ; I2C module's CMD register,
 I2C_DATA: EQU &H91  ; ... DATA register,
 I2C_RDY:  EQU &H92  ; ... and BUSY register
 UART_DAT: EQU &H98  ; UART data
-UART_RDY: EQU &H98  ; UART status
+UART_RDY: EQU &H99  ; UART status
 SONAR:    EQU &HA0  ; base address for more than 16 registers....
 DIST0:    EQU &HA8  ; the eight sonar distance readings
 DIST1:    EQU &HA9  ; ...
