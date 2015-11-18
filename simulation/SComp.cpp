@@ -154,7 +154,7 @@ void SComp::doIoWrite() {
         m_io_sevenSeg1 = io_data;
         break;
       case IOAddr::Sseg2:
-        m_io_sevenSeg1 = io_data;
+        m_io_sevenSeg2 = io_data;
         break;
       case IOAddr::Lcd:
         m_io_lcd = io_data;
@@ -272,113 +272,113 @@ void SComp::doIoRead() {
         io_data = m_io_switches;
         break;
       case IOAddr::Leds:
-        m_io_redLeds = io_data;
+        // Do nothing
         break;
       case IOAddr::Timer:
-        m_io_timer = io_data;
+        io_data = m_io_timer;
         break;
       case IOAddr::Xio:
-        // Do Nothing
+        io_data = m_io_xio;
         break;
       case IOAddr::Sseg1:
-        m_io_sevenSeg1 = io_data;
+        // Do nothing
         break;
       case IOAddr::Sseg2:
-        m_io_sevenSeg1 = io_data;
+        // Do nothing
         break;
       case IOAddr::Lcd:
-        m_io_lcd = io_data;
+        // Do nothing
         break;
       case IOAddr::Xleds:
-        m_io_xleds = io_data;
+        // Do nothing
         break;
       case IOAddr::Beep:
-        m_io_beep = io_data;
+        // Do nothing
         break;
       case IOAddr::Ctimer:
-        m_io_ctimer = io_data;
+        io_data = m_io_ctimer;
         break;
       case IOAddr::Lpos:
-        // Do nothing
+        io_data = m_io_lpos;
         break;
       case IOAddr::Lvel:
-        // Do nothing
+        io_data = m_io_lvel;
         break;
       case IOAddr::Lvelcmd:
-        m_io_lvelcmd = io_data;
+        // Do nothing
         break;
       case IOAddr::Rpos:
-        // Do nothing
+        io_data = m_io_rpos;
         break;
       case IOAddr::Rvel:
-        // Do nothing
+        io_data = m_io_rvel;
         break;
       case IOAddr::Rvelcmd:
-        m_io_rvelcmd = io_data;
+        // Do nothing
         break;
       case IOAddr::I2c_cmd:
-        m_io_i2c_cmd = io_data;
+        // Do nothing
         break;
       case IOAddr::I2c_data:
-        m_io_i2c_data = io_data;
+        // Do nothing
         break;
       case IOAddr::I2c_rdy:
-        m_io_i2c_rdy = io_data;
+        // Do nothing
         break;
       case IOAddr::Uart_dat:
-        m_io_uart_dat = io_data;
+        // Do nothing Not implemented
         break;
       case IOAddr::Uart_rdy:
-        m_io_uart_rdy = io_data;
+        // Do nothing
         break;
       case IOAddr::Sonar:
         // TODO: Does writing to this do anything?
-        //m_io_sonar = io_data;
+        io_data = m_io_sonar;
         break;
       case IOAddr::Dist0:
-        // Do nothing
+        io_data = m_io_dist0;
         break;
       case IOAddr::Dist1:
-        // Do nothing
+        io_data = m_io_dist1;
         break;
       case IOAddr::Dist2:
-        // Do nothing
+        io_data = m_io_dist2;
         break;
       case IOAddr::Dist3:
-        // Do nothing
+        io_data = m_io_dist3;
         break;
       case IOAddr::Dist4:
-        // Do nothing
+        io_data = m_io_dist4;
         break;
       case IOAddr::Dist5:
-        // Do nothing
+        io_data = m_io_dist5;
         break;
       case IOAddr::Dist6:
-        // Do nothing
+        io_data = m_io_dist6;
         break;
       case IOAddr::Dist7:
-        // Do nothing
+        io_data = m_io_dist7;
         break;
       case IOAddr::Sonalarm:
-        m_io_sonalarm = io_data;
+        // Do nothing
         break;
       case IOAddr::Sonarint:
-        m_io_sonarint = io_data;
+        // Do nothing
         break;
       case IOAddr::Sonaren:
-        m_io_sonaren = io_data;
+        // Do nothing
         break;
       case IOAddr::Xpos:
-        // Do Nothing
+        io_data = m_io_xpos;
         break;
       case IOAddr::Ypos:
-        // Do Nothing
+        io_data = m_io_ypos;
         break;
       case IOAddr::Theta:
-        // Do Nothing
+        io_data = m_io_theta;
         break;
       case IOAddr::Resetpos:
-        m_io_resetpos = 1;
+        // Do nothing
         break;
       case IOAddr::Rin:
         // Do Nothing
