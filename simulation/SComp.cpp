@@ -25,6 +25,8 @@ std::vector<int> SComp::getMemory() const {
 }
 
 void SComp::runState() {
+  ++executedInstructions;
+
   if (mw) {
     memory[mem_addr] = ac;
   } else {
@@ -136,6 +138,7 @@ void SComp::updateIO() {
 }
 
 void SComp::doIoWrite() {
+  m_io_resetpos = 0;
   if (io_write && io_cycle) {
     switch ((IOAddr)io_addr) {
       case IOAddr::Switches:
@@ -396,7 +399,50 @@ void SComp::doIoRead() {
 }
 
 void SComp::doIoUpdate() {
-  // TODO
+  updateTimers();
+  updatePos();
+  updateSonar();
+  updateI2C();
+  updateUART();
+}
+
+void SComp::updateTimers() {
+  size_t cclockPeriod = instructionPeriod / 100;
+  size_t clockPeriod = instructionPeriod / 10;
+  if (executedInstructions % cclockPeriod == 0) {
+    if (executedInstructions % clockPeriod == 0) {
+      ++m_io_timer;
+    }
+    ++m_io_ctimer;
+  }
+}
+  
+void SComp::updatePos() {
+  // Does not simulate gear lash because I cannot do it in an intelligent way
+  // and an algorithm could potentially find a "weak spot" in the simulation and
+  // exploit it in a way that would be unrealistic
+
+}
+
+void SComp::updateSonar() {
+  size_t clockPeriod = instructionPeriod / 25;
+  if (executedInstructions % clockPeriod == 0) {
+    for (int i = 1; i < 9; ++i) { // starting from the next sonar
+      int this_sonar = (last_sonar_used + i) % 8;
+      uint16_t bitmask = 1 << (this_sonar);
+      if (bitmask & m_io_sonaren) {
+        
+      }
+    }
+  }
+}
+
+void SComp::updateI2C() {
+
+}
+
+void SComp::updateUART() {
+
 }
 
 void SComp::reset() {

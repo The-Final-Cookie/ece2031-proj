@@ -250,7 +250,11 @@ ENDFOREACH (OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
 
 SET (tfc-sim_HEADERS
   Config.hpp
+  Line.hpp
+  Matrix3.hpp
   MifParse.hpp
+  Util.hpp
+  Vector.hpp
 )
 
 SET (tfc-sim_SOURCES

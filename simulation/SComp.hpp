@@ -4,9 +4,11 @@
 #ifndef SCOMP_HPP
 #define SCOMP_HPP
 
-#include "Config.hpp"
 #include <vector>
 #include <array>
+
+#include "Config.hpp"
+#include "Line.hpp"
 
 namespace TFC {
 
@@ -98,6 +100,12 @@ private:
   void doIoWrite();
   void doIoUpdate();
 
+  void updateTimers();
+  void updatePos();
+  void updateSonar();
+  void updateI2C();
+  void updateUART();
+
   void reset();
   void fetchAndHandleInt();
   void decode();
@@ -126,6 +134,9 @@ private:
   void reti();
 
   static constexpr uint16_t addressMask = 0x7FF;
+  static constexpr size_t instructionPeriod = 12500000; // Clock runs at 12.5 MHz
+
+  uint64_t executedInstructions;
 
   std::vector<int> memory;
   uint8_t io_addr;
@@ -191,6 +202,34 @@ private:
   uint16_t m_io_resetpos;
   uint16_t m_io_rin;
   uint16_t m_io_lin;
+
+  // Used to track the sonars
+  uint8_t last_sonar_used;
+
+  static constexpr const std::array<float, 8> sonarAngles =
+    {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
+    -M_PI*4./5., M_PI*4./5.}};
+
+  // This is used to simulate positional drift
+  // uncertainty at 4% higher values are more evil
+  // This isn't strictly realistic, as positional drift tends to be correlated with speed
+  // and heading drift tends to periodicity with speed when moving forward and
+  // tends to be correlated with angular momentum when staying still, but this
+  // is a decent approximation.
+
+  static constexpr const float posDriftConstant = 0.04;
+  static constexpr const float headingDriftConstant = 0.04;
+  static constexpr const float averageMaxSpeed = 84.2207792208;
+  // The standard deviation ranges from about 1.5 to a bit over 2 depending on
+  // speed, setting to 2 for safety
+  static constexpr const float speedStdDev = 2;
+
+  float m_true_xpos;
+  float m_true_ypos;
+  float m_true_heading;
+
+  float m_momentum;
+  float m_angularMomentum;
 };
 
 }
