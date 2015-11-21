@@ -33,7 +33,7 @@ std::vector<int> SComp::getMemory() const {
 }
 
 void SComp::runState() {
-  ++executedInstructions;
+  ++executed_instructions;
 
   if (mw) {
     memory[mem_addr] = ac;
@@ -45,11 +45,19 @@ void SComp::runState() {
 
   updateIO();
 
-  mem_addr = (state == State::FETCH) ? pc : ir & addressMask;
+  mem_addr = (state == State::FETCH) ? pc : ir & address_mask;
   io_cycle = (state == State::EX_IN ||
               state == State::EX_OUT2);
 
   io_write = io_write_int;
+
+  // This is one half of the check, the other half is in sendInterrupt
+  for (int i = 0; i < (int)Interrupt::SIZE; ++i) {
+    auto bitmask = 1 << i;
+    if ((int_ack & bitmask) || !(iie & bitmask)) {
+      int_req &= ~bitmask; // unsets bit
+    }
+  }
 
   int_req_sync = int_req;
 
@@ -156,7 +164,7 @@ void SComp::doIoWrite() {
         m_io_redLeds = io_data;
         break;
       case IOAddr::Timer:
-        m_io_timer = io_data;
+        m_io_timer = 0;
         break;
       case IOAddr::Xio:
         // Do Nothing
@@ -210,7 +218,7 @@ void SComp::doIoWrite() {
         m_io_uart_dat = io_data;
         break;
       case IOAddr::Uart_rdy:
-        m_io_uart_rdy = io_data;
+        // Do nothing
         break;
       case IOAddr::Sonar:
         // TODO: Does writing to this do anything?
@@ -241,7 +249,7 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Sonalarm:
-        m_io_sonalarm = io_data;
+        m_io_sonalarm_distance = io_data;
         break;
       case IOAddr::Sonarint:
         m_io_sonarint = io_data;
@@ -307,7 +315,7 @@ void SComp::doIoRead() {
         // Do nothing
         break;
       case IOAddr::Ctimer:
-        io_data = m_io_ctimer;
+        // Do nothing
         break;
       case IOAddr::Lpos:
         io_data = m_io_lpos;
@@ -343,8 +351,8 @@ void SComp::doIoRead() {
         // Do nothing
         break;
       case IOAddr::Sonar:
-        // TODO: Does writing to this do anything?
-        io_data = m_io_sonar;
+        // TODO: Does reading from this do anything?
+        // io_data = m_io_sonar;
         break;
       case IOAddr::Dist0:
         io_data = m_io_dist[0];
@@ -371,7 +379,7 @@ void SComp::doIoRead() {
         io_data = m_io_dist[7];
         break;
       case IOAddr::Sonalarm:
-        // Do nothing
+        io_data = m_io_sonalarm_flags;
         break;
       case IOAddr::Sonarint:
         // Do nothing
@@ -415,10 +423,10 @@ void SComp::doIoUpdate() {
 }
 
 void SComp::updateTimers() {
-  size_t cclockPeriod = instructionPeriod / 100;
-  size_t clockPeriod = instructionPeriod / 10;
-  if (executedInstructions % cclockPeriod == 0) {
-    if (executedInstructions % clockPeriod == 0) {
+  size_t cclockPeriod = instruction_period / 100; // 100 Hz
+  size_t clockPeriod = instruction_period / 10; // 10 Hz
+  if (executed_instructions % cclockPeriod == 0) {
+    if (executed_instructions % clockPeriod == 0) {
       ++m_io_timer;
     }
     ++m_io_ctimer;
@@ -432,29 +440,32 @@ void SComp::updatePos() {
 
   // Additionally, this is all very fudged.
 
-  // The acceleration (including deceleration) of each wheel is controlled to
-  // 512units/s.  An important side effect of this is that overshoot can b e
-  // calculated and accounted for.  In general, the distance required to change
-  // velocity is (v_1^2 - v_2^2) / 2a , so, simplified and applied to this
-  // robot, the distance required to stop can be estimated by Vel^2/1024 (where
-  // both VEL and the resulting distance are in robot units).  Extending this to
-  // rotation s, assuming in-place rotations with equal but opposite wheel
-  // velocities Vel_turn, overshoot (in degrees) can be estimated as Vel_turn^2
-  // / 2030.
-
-  
+  // Period for odometry update
+  size_t clockPeriod = instruction_period / 100; // 100 Hz
+  // Period for m_io_lvel and m_io_rvel update
+  size_t clockPeriod10 = instruction_period / 10; // 10 Hz
 }
 
 void SComp::updateSonar() {
-  size_t clockPeriod = instructionPeriod / 25;
-  if (executedInstructions % clockPeriod == 0) {
+  size_t clockPeriod = instruction_period / 25; // 25Hz
+
+  if (executed_instructions % clockPeriod == 0) {
+    // Clear disabled sonars first
+    for (int i = 0; i < 8; ++i) {
+      // If this sonar is disabled
+      if (!((1 << i) & m_io_sonaren)) {
+        // set it to no_echo
+        m_io_dist[i] = no_echo;
+      }
+    }
+
     for (int i = 1; i < 9; ++i) { // starting from the next sonar
       int this_sonar = (last_sonar_used + i) % 8;
       uint16_t bitmask = 1 << (this_sonar);
       if (bitmask & m_io_sonaren) {
         last_sonar_used = this_sonar;
-        auto position = Vec2D{m_true_xpos, m_true_ypos};
-        auto angle = m_true_heading + sonarAngles[this_sonar];
+        auto position = Vec2D{true_xpos, true_ypos};
+        auto angle = true_heading + sonar_angles[this_sonar];
 
         // because the sonars are located on the side of the robot
         position += Vec2D::withAngle(angle, robot_size);
@@ -468,6 +479,13 @@ void SComp::updateSonar() {
             auto range = intersection.t * sonar_range;
             range += dist(engine);
             m_io_dist[this_sonar] = round(range);
+
+            if (m_io_dist[this_sonar] < m_io_sonalarm_distance &&
+                bitmask & m_io_sonarint) {
+              m_io_sonalarm_flags = bitmask;
+              sendInterrupt(Interrupt::Sonar);
+            }
+
             return;
           }
         }
@@ -595,11 +613,11 @@ void SComp::decode() {
       state = State::EX_OUT;
       io_write_int = true;
       break;
-    case 0x14:
+    case 0x14: // CLI
       state = State::FETCH;
       iie &= (~ir & 0xF); // AND NOT IR(3 DOWNTO 0)
       break;
-    case 0x15:
+    case 0x15: // SEI
       state = State::FETCH;
       iie |= (ir & 0xF); //OR IR(3 DOWNTO 0)
       break;
@@ -640,13 +658,13 @@ void SComp::sub() {
 }
 
 void SComp::jump() {
-  pc = ir & addressMask;
+  pc = ir & address_mask;
   state = State::FETCH;
 }
 
 void SComp::jneg() {
   if (ac < 0) {
-    pc = ir & addressMask;
+    pc = ir & address_mask;
   }
 
   state = State::FETCH;
@@ -654,7 +672,7 @@ void SComp::jneg() {
 
 void SComp::jpos() {
   if (ac > 0) {
-    pc = ir & addressMask;
+    pc = ir & address_mask;
   }
 
   state = State::FETCH;
@@ -662,7 +680,7 @@ void SComp::jpos() {
 
 void SComp::jzero() {
   if (ac == 0) {
-    pc = ir & addressMask;
+    pc = ir & address_mask;
   }
 
   state = State::FETCH;
@@ -696,7 +714,7 @@ void SComp::shift() {
 
 void SComp::addi() {
   if (ir & 0x400) { // sign bit
-    ac += ir | ~addressMask;
+    ac += ir | ~address_mask;
   } else {
     ac += ir;
   }
@@ -704,15 +722,15 @@ void SComp::addi() {
 }
 
 void SComp::iload() {
-  ir &= ~addressMask;
-  ir |= (mdr & addressMask);
+  ir &= ~address_mask;
+  ir |= (mdr & address_mask);
 
   state = State::EX_LOAD;
 }
 
 void SComp::istore() {
-  ir &= ~addressMask;
-  ir |= (mdr & addressMask);
+  ir &= ~address_mask;
+  ir |= (mdr & address_mask);
 
   state = State::EX_STORE;
 }
@@ -722,7 +740,7 @@ void SComp::call() {
     pc_stack[i+1] = pc_stack[i];
   }
   pc_stack[0] = pc;
-  pc = ir & addressMask;
+  pc = ir & address_mask;
   state = State::FETCH;
 }
 
@@ -755,7 +773,7 @@ void SComp::out2() {
 
 void SComp::loadi() {
   if (ir & 0x400) { // sign bit
-    ac = ir | ~addressMask;
+    ac = ir | ~address_mask;
   } else {
     ac = ir;
   }
@@ -767,6 +785,13 @@ void SComp::reti() {
   pc = pc_saved;
   ac = ac_saved;
   state = State::FETCH;
+}
+
+void SComp::sendInterrupt(Interrupt i) {
+  int bitmask = 1 << (int)i;
+  if ((iie & bitmask) && !(int_ack & bitmask)) {
+    int_req |= bitmask;
+  }
 }
 
 }

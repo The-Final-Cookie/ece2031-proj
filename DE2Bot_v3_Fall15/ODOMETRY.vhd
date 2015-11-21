@@ -49,7 +49,7 @@ ARCHITECTURE A OF ODOMETRY IS
 	SIGNAL OUTSELECT : STD_LOGIC_VECTOR(2 DOWNTO 0); -- used to select the appropriate output data
 	SIGNAL OUTDATA : STD_LOGIC_VECTOR(15 DOWNTO 0); -- register that SCOMP reads
 	CONSTANT THETASCALE : STD_LOGIC_VECTOR(9 DOWNTO 0) := STD_LOGIC_VECTOR(TO_UNSIGNED(516,10));
-	
+
 BEGIN
 	-- ALTSYNCRAM for look-up table (LUT).
 	-- This RAM is set up as ROM; there is no way to write 
@@ -146,7 +146,7 @@ BEGIN
 		dataB  => THETASCALE,
 		result => THETA360
 	);
-	
+
 	-- LPM tri-state function to drive I/O bus
 	IO_BUS: LPM_BUSTRI
 	GENERIC MAP (
@@ -157,12 +157,12 @@ BEGIN
 		enabledt => READ_REQ, -- when SCOMP requests data
 		tridata  => IO_DATA
 	);
-	
+
 	-- READ_REQ is asserted when SCOMP is requesting ANY data from us
 	READ_REQ <= NOT(IO_WRITE) AND (CSX OR CSY OR CST);
 	-- OUTSELECT is used to choose the output.
 	OUTSELECT <= CSX & CSY & CST;
-	
+
 	-- Here we use OUTSELECT to output the appropriate data.
 	-- Note that XPOS and YPOS are 32 bits, but the bus is 16 bits,
 	-- so a subset must be taken.  It makes sense to ignore the
@@ -175,7 +175,7 @@ BEGIN
 		YPOS(26 DOWNTO 11) WHEN "010",
 		("000000"&THETA360(19 DOWNTO 10)) WHEN "001",
 		x"0000" WHEN OTHERS;
-		
+
 	PROCESS (RESETN, CLOCK)
 	BEGIN
 		IF RESETN = '0' THEN -- reset all registers
@@ -189,13 +189,13 @@ BEGIN
 		ELSIF RISING_EDGE(CLOCK) THEN
 			RPOS <= ENC_RPOS;
 			LPOS <= ENC_LPOS;
-			
+
 			THETA <= STD_LOGIC_VECTOR(SIGNED(RPOS - LPOS) MOD 1428); -- will always be [0,1427]
 
 			-- Add dU*COS(theta) to the previous XPOS, and similar with YPOS
 			XPOS <= XPOS + dUxCOS;
 			YPOS <= YPOS + dUxSIN;
-			
+
 			-- dU is the difference between last sum and current sum.  We don't bother
 			-- dividing by two here.  We instead do it when returning the values to SCOMP.
 			dU <= (LPOS + RPOS) - lastSUM;
@@ -203,5 +203,5 @@ BEGIN
 
 		END IF;
 	END PROCESS;
-	
+
 END A;

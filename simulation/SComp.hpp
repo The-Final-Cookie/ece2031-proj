@@ -94,6 +94,15 @@ private:
     Lin = 0xC9,
   };
 
+  enum class Interrupt : uint8_t {
+    Timer = 0x1,
+    Sonar = 0x2,
+    UART  = 0x4,
+    Stall = 0x8,
+
+    SIZE = 4,
+  };
+
   void runState();
 
   void updateIO();
@@ -134,12 +143,14 @@ private:
   void loadi();
   void reti();
 
-  static constexpr uint16_t addressMask = 0x7FF;
-  static constexpr size_t instructionPeriod = 12500000; // Clock runs at 12.5 MHz
+  void sendInterrupt(Interrupt);
+
+  static constexpr uint16_t address_mask = 0x7FF;
+  static constexpr size_t instruction_period = 12500000; // Clock runs at 12.5 MHz
   
   // Angles are assumed to have a common centerpoint for simplicity.  This is
   // not true.
-  static constexpr const std::array<double, 8> sonarAngles =
+  static constexpr const std::array<double, 8> sonar_angles =
     {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
     -M_PI*4./5., M_PI*4./5.}};
 
@@ -176,20 +187,35 @@ private:
   // tends to be correlated with angular momentum when staying still, but this
   // is a decent approximation.
 
-  static constexpr const double posDriftConstant = 0.04;
-  static constexpr const double headingDriftConstant = 0.04;
+  static constexpr const double pos_fuzz = 0.04;
+  static constexpr const double heading_fuzz = 0.04;
 
   // These constants are MAGIC.  Thanks Kevin!  Units are mm/(sec speedUnit)
-  static constexpr const double speedSlope = 1.20706637595084;
-  static constexpr const double speedInter = -55.7557985989281;
+  // More testing may get better data for this.  I expect the fit to not be
+  // strictly linear due to the strange, non-linear nature of rotational
+  // friction in a DC motor.
+  static constexpr const double speed_slope = 1.20706637595084;
+  static constexpr const double speed_inter = -55.7557985989281;
+  
+  // "The acceleration (including deceleration) of each wheel is controlled to
+  // 512units/s.  An important side effect of this is that overshoot can be
+  // calculated and accounted for.  In general, the distance required to change
+  // velocity is (v_1^2 - v_2^2) / 2a , so, simplified and applied to this
+  // robot, the distance required to stop can be estimated by Vel^2/1024 (where
+  // both VEL and the resulting distance are in robot units).  Extending this to
+  // rotation s, assuming in-place rotations with equal but opposite wheel
+  // velocities Vel_turn, overshoot (in degrees) can be estimated as Vel_turn^2
+  // / 2030."
+
+  static constexpr const double max_accel = 0;
 
   // The standard deviation ranges from about 1.5 to a bit over 2 depending on
   // speed, setting to 2 for safety
-  static constexpr const double speedStdDev = 2;
+  static constexpr const double speed_stdev = 2.0;
 
   std::mt19937_64 engine;
 
-  uint64_t executedInstructions;
+  uint64_t executed_instructions;
 
   std::vector<int> memory;
   uint8_t io_addr;
@@ -239,7 +265,10 @@ private:
   uint16_t m_io_uart_rdy;
   uint16_t m_io_sonar;
   std::array<uint16_t, 8> m_io_dist;
-  uint16_t m_io_sonalarm;
+
+  uint16_t m_io_sonalarm_distance;
+  uint16_t m_io_sonalarm_flags;
+
   uint16_t m_io_sonarint;
   uint16_t m_io_sonaren;
   uint16_t m_io_xpos;
@@ -252,12 +281,12 @@ private:
   // Used to track the sonars
   uint8_t last_sonar_used;
 
-  double m_true_xpos;
-  double m_true_ypos;
-  double m_true_heading;
+  double true_xpos;
+  double true_ypos;
+  double true_heading;
 
-  double m_momentum;
-  double m_angularMomentum;
+  double true_lvel;
+  double true_rvel;
 };
 
 }
