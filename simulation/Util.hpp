@@ -15,6 +15,12 @@ typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
     || std::abs(x-y) < std::numeric_limits<T>::min();
 }
 
+template<class T>
+typename std::enable_if<!std::numeric_limits<T>::is_integer, bool>::type
+  nearZero(T x, int ulp = 100) {
+  return almost_equal(x, (T)0, ulp);
+}
+
 template<typename T>
 T clamp(T const val, T const min, T const max) {
     return std::min(std::max(val, min), max);

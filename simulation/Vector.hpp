@@ -31,33 +31,33 @@ public:
   template<size_t P, typename T2=void>
   using Enable4DOrHigher = typename std::enable_if<P >= 4 && N == P, T2>::type;
 
-  static Vector filled(T const& t);
+  constexpr static Vector filled(T const& t);
 
   template<typename T2>
-  static Vector floor(Vector<T2, N> const& v);
+  constexpr static Vector floor(Vector<T2, N> const& v);
 
   template<typename T2>
-  static Vector ceil(Vector<T2, N> const& v);
+  constexpr static Vector ceil(Vector<T2, N> const& v);
 
   template<typename T2>
-  static Vector round(Vector<T2, N> const& v);
+  constexpr static Vector round(Vector<T2, N> const& v);
 
   template<typename Iterator>
-  static Vector copyFrom(Iterator p);
+  constexpr static Vector copyFrom(Iterator p);
 
   // Is zero-initialized (from Array)
-  Vector();
+  constexpr Vector();
 
-  explicit Vector(T const& e1);
+  constexpr explicit Vector(T const& e1);
 
   template<typename... TN>
-  Vector(T const& e1, TN const&... rest);
+  constexpr Vector(T const& e1, TN const&... rest);
 
   template<typename T2>
-  explicit Vector(std::array<T2, N> const& v);
+  constexpr explicit Vector(std::array<T2, N> const& v);
 
   template<typename T2, typename T3>
-  Vector(std::array<T2, N-1> const& u, T3 const& v);
+  constexpr Vector(std::array<T2, N-1> const& u, T3 const& v);
 
   template<size_t N2>
   Vector<T, N2> toSize() const;
@@ -129,14 +129,14 @@ public:
 
   // Return vector rotated to given angle
   template<size_t P=N>
-  static Enable2D<P, Vector> withAngle(T angle, T magnitude = 1);
+  constexpr static Enable2D<P, Vector> withAngle(T angle, T magnitude = 1);
 
   template<size_t P=N>
-  static Enable2D<P, T> angleBetween2(Vector const& u, Vector const& v);
+  constexpr static Enable2D<P, T> angleBetween2(Vector const& u, Vector const& v);
   template<size_t P=N>
-  static Enable2D<P, T> angleFormedBy2(Vector const& a, Vector const& b, Vector const& c);
+  constexpr static Enable2D<P, T> angleFormedBy2(Vector const& a, Vector const& b, Vector const& c);
   template<size_t P=N>
-  static Enable2D<P, T> angleFormedBy2(Vector const& a, Vector const& b, Vector const& c, std::function<Vector(Vector, Vector)> const& diff);
+  constexpr static Enable2D<P, T> angleFormedBy2(Vector const& a, Vector const& b, Vector const& c, std::function<Vector(Vector, Vector)> const& diff);
 
   template<size_t P=N>
   Enable2D<P, Vector> rotate(T angle) const;
@@ -170,13 +170,13 @@ public:
   // Vector3
 
   template<size_t P=N>
-  static Enable3D<P, Vector> fromAngles(T psi, T theta);
+  constexpr static Enable3D<P, Vector> fromAngles(T psi, T theta);
   template<size_t P=N>
-  static Enable3D<P, Vector> fromAnglesEnu(T psi, T theta);
+  constexpr static Enable3D<P, Vector> fromAnglesEnu(T psi, T theta);
   template<size_t P=N>
-  static Enable3D<P, T> tripleScalarProduct(Vector const& u, Vector const& v, Vector const& w);
+  constexpr static Enable3D<P, T> tripleScalarProduct(Vector const& u, Vector const& v, Vector const& w);
   template<size_t P=N>
-  static Enable3D<P, T> angle(Vector const& v1, Vector const& v2);
+  constexpr static Enable3D<P, T> angle(Vector const& v1, Vector const& v2);
 
   template<size_t P=N>
   Enable3D<P, T> psi() const;
@@ -274,7 +274,7 @@ template<typename T>
 T operator^(Vector<T, 2> const& v1, Vector<T, 2> const& v2);
 
 template<typename T, size_t N>
-Vector<T, N> Vector<T, N>::filled(T const& t) {
+constexpr Vector<T, N> Vector<T, N>::filled(T const& t) {
   Vector v;
   for (size_t i = 0; i < N; ++i)
     v[i] = t;
@@ -283,7 +283,7 @@ Vector<T, N> Vector<T, N>::filled(T const& t) {
 
 template<typename T, size_t N>
 template<typename T2>
-Vector<T, N> Vector<T, N>::floor(Vector<T2, N> const& v) {
+constexpr Vector<T, N> Vector<T, N>::floor(Vector<T2, N> const& v) {
   Vector vec;
   for (size_t i = 0; i < N; ++i)
     vec[i] = floor(v[i]);
@@ -292,7 +292,7 @@ Vector<T, N> Vector<T, N>::floor(Vector<T2, N> const& v) {
 
 template<typename T, size_t N>
 template<typename T2>
-Vector<T, N> Vector<T, N>::ceil(Vector<T2, N> const& v) {
+constexpr Vector<T, N> Vector<T, N>::ceil(Vector<T2, N> const& v) {
   Vector vec;
   for (size_t i = 0; i < N; ++i)
     vec[i] = ceil(v[i]);
@@ -301,7 +301,7 @@ Vector<T, N> Vector<T, N>::ceil(Vector<T2, N> const& v) {
 
 template<typename T, size_t N>
 template<typename T2>
-Vector<T, N> Vector<T, N>::round(Vector<T2, N> const& v) {
+constexpr Vector<T, N> Vector<T, N>::round(Vector<T2, N> const& v) {
   Vector vec;
   for (size_t i = 0; i < N; ++i)
     vec[i] = round(v[i]);
@@ -310,7 +310,7 @@ Vector<T, N> Vector<T, N>::round(Vector<T2, N> const& v) {
 
 template<typename T, size_t N>
 template<typename Iterator>
-Vector<T, N> Vector<T, N>::copyFrom(Iterator p) {
+constexpr Vector<T, N> Vector<T, N>::copyFrom(Iterator p) {
   Vector v;
   for (size_t i = 0; i < N; ++i)
     v[i] = *(p++);
@@ -318,22 +318,23 @@ Vector<T, N> Vector<T, N>::copyFrom(Iterator p) {
 }
 
 template<typename T, size_t N>
-Vector<T, N>::Vector() {}
+constexpr Vector<T, N>::Vector() {}
 
 template<typename T, size_t N>
-Vector<T, N>::Vector(T const& e1) : Base(e1) {}
+constexpr Vector<T, N>::Vector(T const& e1) : Base(e1) {}
 
 template<typename T, size_t N>
 template<typename... TN>
-Vector<T, N>::Vector(T const& e1, TN const&... rest) : Base(e1, rest...) {}
+constexpr Vector<T, N>::Vector(T const& e1, TN const&... rest)
+  : Base({{e1, rest...}}) {}
 
 template<typename T, size_t N>
 template<typename T2>
-Vector<T, N>::Vector(std::array<T2, N> const& v) : Base(v) {}
+constexpr Vector<T, N>::Vector(std::array<T2, N> const& v) : Base(v) {}
 
 template<typename T, size_t N>
 template<typename T2, typename T3>
-Vector<T, N>::Vector(std::array<T2, N-1> const& u, T3 const& v) {
+constexpr Vector<T, N>::Vector(std::array<T2, N-1> const& u, T3 const& v) {
   for (size_t i = 0; i < N-1; ++i) {
     Base::operator[](i) = u[i];
   }
@@ -616,26 +617,26 @@ Vector<T, N>& Vector<T, N>::operator/=(T s) {
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::withAngle(T angle, T magnitude) -> Enable2D<P, Vector<T, N>> {
+constexpr auto Vector<T, N>::withAngle(T angle, T magnitude) -> Enable2D<P, Vector<T, N>> {
   return Vector(std::cos(angle) * magnitude, std::sin(angle) * magnitude);
 }
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::angleBetween2(Vector const& v1, Vector const& v2) -> Enable2D<P, T> {
+constexpr auto Vector<T, N>::angleBetween2(Vector const& v1, Vector const& v2) -> Enable2D<P, T> {
   // TODO: Inefficient
   return v2.angle() - v1.angle();
 }
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::angleFormedBy2(Vector const& a, Vector const& b, Vector const& c) -> Enable2D<P, T> {
+constexpr auto Vector<T, N>::angleFormedBy2(Vector const& a, Vector const& b, Vector const& c) -> Enable2D<P, T> {
   return angleBetween2(b - a, b - c);
 }
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::angleFormedBy2(Vector const& a, Vector const& b, Vector const& c, std::function<Vector(Vector, Vector)> const& diff) -> Enable2D<P, T> {
+constexpr auto Vector<T, N>::angleFormedBy2(Vector const& a, Vector const& b, Vector const& c, std::function<Vector(Vector, Vector)> const& diff) -> Enable2D<P, T> {
   return angleBetween2(diff(b, a), diff(b, c));
 }
 
@@ -704,7 +705,7 @@ auto Vector<T, N>::setY(T const& t) -> Enable2DOrHigher<P> {
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::tripleScalarProduct(Vector const& a, Vector const& b, Vector const& c) -> Enable3D<P, T> {
+constexpr auto Vector<T, N>::tripleScalarProduct(Vector const& a, Vector const& b, Vector const& c) -> Enable3D<P, T> {
     return a * (b ^ c);
 }
 
@@ -774,7 +775,7 @@ auto Vector<T, N>::eulers() const -> Enable3D<P, Vector<T, 2>> {
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::fromAngles(T psi, T theta) -> Enable3D<P, Vector<T, N>> {
+constexpr auto Vector<T, N>::fromAngles(T psi, T theta) -> Enable3D<P, Vector<T, N>> {
   Vec3F nv;
     T cosTheta = T(cos(theta));
 
@@ -788,14 +789,14 @@ auto Vector<T, N>::fromAngles(T psi, T theta) -> Enable3D<P, Vector<T, N>> {
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::fromAnglesEnu(T psi, T theta) -> Enable3D<P, Vector<T, N>> {
+constexpr auto Vector<T, N>::fromAnglesEnu(T psi, T theta) -> Enable3D<P, Vector<T, N>> {
   Vector nv = fromAngles(psi, theta);
     return Vector(nv.y(), nv.x(), -nv.z());
 }
 
 template<typename T, size_t N>
 template<size_t P>
-auto Vector<T, N>::angle(Vector const& v1, Vector const& v2) -> Enable3D<P, T> {
+constexpr auto Vector<T, N>::angle(Vector const& v1, Vector const& v2) -> Enable3D<P, T> {
     return acos(std::min(norm(v1)*norm(v2), 1.0));
 }
 

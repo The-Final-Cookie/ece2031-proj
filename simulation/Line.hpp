@@ -24,13 +24,13 @@ public:
     bool glances;
   };
 
-  Line() {}
+  constexpr Line() {}
 
   template<typename T2>
-  explicit Line(Line<T2, N> const& line)
+  constexpr explicit Line(Line<T2, N> const& line)
     : m_min(line.min()), m_max(line.max()) {}
 
-  Line(VectorType const& a, VectorType const& b)
+  constexpr Line(VectorType const& a, VectorType const& b)
     : m_min(a), m_max(b) {}
 
   VectorType direction() const {
@@ -188,8 +188,8 @@ public:
       isect.coincides = false;
       isect.glances = !infinite &&
                       isect.intersects &&
-                      (nearZero(ta) || nearEqual(ta, 1.0f) ||
-                       nearZero(tb) || nearEqual(tb, 1.0f));
+                      (nearZero(ta) || almost_equal(ta, 1.0) ||
+                       nearZero(tb) || almost_equal(tb, 1.0));
     }
     return isect;
   }

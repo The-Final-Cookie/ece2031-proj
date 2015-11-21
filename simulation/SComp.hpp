@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <array>
+#include <random>
 
 #include "Config.hpp"
 #include "Line.hpp"
@@ -135,6 +136,54 @@ private:
 
   static constexpr uint16_t addressMask = 0x7FF;
   static constexpr size_t instructionPeriod = 12500000; // Clock runs at 12.5 MHz
+  
+  // Angles are assumed to have a common centerpoint for simplicity.  This is
+  // not true.
+  static constexpr const std::array<double, 8> sonarAngles =
+    {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
+    -M_PI*4./5., M_PI*4./5.}};
+
+  static constexpr const uint16_t no_echo = 0x7FFF;
+
+  // Sonar distance is tracked in mms and can sense up to 5m away
+  static constexpr const uint16_t sonar_range = 5000;
+  // but not less than 15cm
+  static constexpr const uint16_t sonar_min = 150;
+
+  // Accuracy is only good to +- 1cm though (using it as a stdev at 95%)
+  static constexpr const double sonar_fuzz = 5;
+
+  static constexpr const double axle_track = 238;
+
+  // For simplicity, the DE2Bot is modeled as a circle with a radius of its axle
+  // track diameter + 50mm for safety, the robot is slightly longer than wide
+  static constexpr const double robot_size = axle_track + 50;
+
+  // Arena
+  static constexpr const std::array<Line2D, 6> arena = {{
+      Line2D{Vec2D(-1524, 1828.8), Vec2D(-304.8, 1828.8)},   // Top left
+      Line2D{Vec2D(304.8, 1828.8), Vec2D(1524, 1828.8)},     // Top right
+      Line2D{Vec2D(-1524, -1828.8), Vec2D(-1524, 1828.8)},   // Left
+      Line2D{Vec2D(1524, -1828.8), Vec2D(1524, 1828.8)},     // Right
+      Line2D{Vec2D(-1524, -1828.8), Vec2D(-304.8, -1828.8)}, // Bottom left
+      Line2D{Vec2D(304.8, -1828.8), Vec2D(1524, -1828.8)},   // Bottom right
+    }};
+
+  // This is used to simulate positional drift
+  // uncertainty at 4% higher values are more evil
+  // This isn't strictly realistic, as positional drift tends to be correlated with speed
+  // and heading drift tends to periodicity with speed when moving forward and
+  // tends to be correlated with angular momentum when staying still, but this
+  // is a decent approximation.
+
+  static constexpr const double posDriftConstant = 0.04;
+  static constexpr const double headingDriftConstant = 0.04;
+  static constexpr const double averageMaxSpeed = 84.2207792208;
+  // The standard deviation ranges from about 1.5 to a bit over 2 depending on
+  // speed, setting to 2 for safety
+  static constexpr const double speedStdDev = 2;
+
+  std::mt19937_64 engine;
 
   uint64_t executedInstructions;
 
@@ -185,14 +234,7 @@ private:
   uint16_t m_io_uart_dat;
   uint16_t m_io_uart_rdy;
   uint16_t m_io_sonar;
-  uint16_t m_io_dist0;
-  uint16_t m_io_dist1;
-  uint16_t m_io_dist2;
-  uint16_t m_io_dist3;
-  uint16_t m_io_dist4;
-  uint16_t m_io_dist5;
-  uint16_t m_io_dist6;
-  uint16_t m_io_dist7;
+  std::array<uint16_t, 8> m_io_dist;
   uint16_t m_io_sonalarm;
   uint16_t m_io_sonarint;
   uint16_t m_io_sonaren;
@@ -206,30 +248,12 @@ private:
   // Used to track the sonars
   uint8_t last_sonar_used;
 
-  static constexpr const std::array<float, 8> sonarAngles =
-    {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
-    -M_PI*4./5., M_PI*4./5.}};
+  double m_true_xpos;
+  double m_true_ypos;
+  double m_true_heading;
 
-  // This is used to simulate positional drift
-  // uncertainty at 4% higher values are more evil
-  // This isn't strictly realistic, as positional drift tends to be correlated with speed
-  // and heading drift tends to periodicity with speed when moving forward and
-  // tends to be correlated with angular momentum when staying still, but this
-  // is a decent approximation.
-
-  static constexpr const float posDriftConstant = 0.04;
-  static constexpr const float headingDriftConstant = 0.04;
-  static constexpr const float averageMaxSpeed = 84.2207792208;
-  // The standard deviation ranges from about 1.5 to a bit over 2 depending on
-  // speed, setting to 2 for safety
-  static constexpr const float speedStdDev = 2;
-
-  float m_true_xpos;
-  float m_true_ypos;
-  float m_true_heading;
-
-  float m_momentum;
-  float m_angularMomentum;
+  double m_momentum;
+  double m_angularMomentum;
 };
 
 }

@@ -6,7 +6,15 @@
 namespace TFC {
 
 SComp::SComp(std::vector<int> const& memory)
-: memory(memory), state(State::RESET_PC), pc_stack() {}
+  : memory(memory), state(State::RESET_PC), pc_stack(),
+    m_io_dist({{no_echo}}) {
+  std::array<int, std::mt19937::state_size> seed_data;
+  std::random_device r;
+  std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
+  std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+
+  engine = std::mt19937_64(seq);
+}
 
 void SComp::stepInstruction(size_t count) {
   for (size_t i = 0; i < count; ++i) {
@@ -339,28 +347,28 @@ void SComp::doIoRead() {
         io_data = m_io_sonar;
         break;
       case IOAddr::Dist0:
-        io_data = m_io_dist0;
+        io_data = m_io_dist[0];
         break;
       case IOAddr::Dist1:
-        io_data = m_io_dist1;
+        io_data = m_io_dist[1];
         break;
       case IOAddr::Dist2:
-        io_data = m_io_dist2;
+        io_data = m_io_dist[2];
         break;
       case IOAddr::Dist3:
-        io_data = m_io_dist3;
+        io_data = m_io_dist[3];
         break;
       case IOAddr::Dist4:
-        io_data = m_io_dist4;
+        io_data = m_io_dist[4];
         break;
       case IOAddr::Dist5:
-        io_data = m_io_dist5;
+        io_data = m_io_dist[5];
         break;
       case IOAddr::Dist6:
-        io_data = m_io_dist6;
+        io_data = m_io_dist[6];
         break;
       case IOAddr::Dist7:
-        io_data = m_io_dist7;
+        io_data = m_io_dist[7];
         break;
       case IOAddr::Sonalarm:
         // Do nothing
@@ -431,7 +439,29 @@ void SComp::updateSonar() {
       int this_sonar = (last_sonar_used + i) % 8;
       uint16_t bitmask = 1 << (this_sonar);
       if (bitmask & m_io_sonaren) {
-        
+        last_sonar_used = this_sonar;
+        auto position = Vec2D{m_true_xpos, m_true_ypos};
+        auto angle = m_true_heading + sonarAngles[this_sonar];
+
+        // because the sonars are located on the side of the robot
+        position += Vec2D::withAngle(angle, robot_size);
+
+        auto heading = Vec2D::withAngle(angle, sonar_range);
+        auto echo_path = Line2D{position, position + heading};
+        for (auto const& wall : arena) {
+          auto intersection = echo_path.intersection(wall);
+          if (intersection.intersects) {
+            std::normal_distribution<double> dist(0, sonar_fuzz);
+            auto range = intersection.t * sonar_range;
+            range += dist(engine);
+            m_io_dist[this_sonar] = round(range);
+            return;
+          }
+        }
+
+        // if we didn't find a wall, then there's no echo.
+        m_io_dist[this_sonar] = no_echo;
+        return;
       }
     }
   }
