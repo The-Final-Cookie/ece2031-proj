@@ -430,6 +430,19 @@ void SComp::updatePos() {
   // and an algorithm could potentially find a "weak spot" in the simulation and
   // exploit it in a way that would be unrealistic
 
+  // Additionally, this is all very fudged.
+
+  // The acceleration (including deceleration) of each wheel is controlled to
+  // 512units/s.  An important side effect of this is that overshoot can b e
+  // calculated and accounted for.  In general, the distance required to change
+  // velocity is (v_1^2 - v_2^2) / 2a , so, simplified and applied to this
+  // robot, the distance required to stop can be estimated by Vel^2/1024 (where
+  // both VEL and the resulting distance are in robot units).  Extending this to
+  // rotation s, assuming in-place rotations with equal but opposite wheel
+  // velocities Vel_turn, overshoot (in degrees) can be estimated as Vel_turn^2
+  // / 2030.
+
+  
 }
 
 void SComp::updateSonar() {
@@ -468,11 +481,11 @@ void SComp::updateSonar() {
 }
 
 void SComp::updateI2C() {
-
+  // TODO
 }
 
 void SComp::updateUART() {
-
+  // TODO
 }
 
 void SComp::reset() {

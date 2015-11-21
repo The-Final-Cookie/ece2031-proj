@@ -178,7 +178,11 @@ private:
 
   static constexpr const double posDriftConstant = 0.04;
   static constexpr const double headingDriftConstant = 0.04;
-  static constexpr const double averageMaxSpeed = 84.2207792208;
+
+  // These constants are MAGIC.  Thanks Kevin!  Units are mm/(sec speedUnit)
+  static constexpr const double speedSlope = 1.20706637595084;
+  static constexpr const double speedInter = -55.7557985989281;
+
   // The standard deviation ranges from about 1.5 to a bit over 2 depending on
   // speed, setting to 2 for safety
   static constexpr const double speedStdDev = 2;
