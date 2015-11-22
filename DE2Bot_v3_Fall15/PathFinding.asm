@@ -1,11 +1,10 @@
   ORG &H000
 
 ConvertToUnits:
-  LOADI 300
-  OUT LEDS
   LOADI Points 
   ADD Idx
   ADD Idx
+  OUT LEDS
   STORE Offset
   CALL FeetToUnits
   LOAD Offset
@@ -23,10 +22,11 @@ FeetToUnits:
   ILOAD Offset
   ; Now we have the value that we want to modify in our AC
   STORE m16sA
-  LOADI 2093 ; There are 209.2857... robot units in a foot
+  LOAD TenthUnitsInFoot
   STORE m16sB
   CALL Mult16s ; Because we know that we won't be given values higher than 6
   LOAD mres16sL ; We only need to load the low word 
+  OUT LEDS
   STORE d16sN ; and / 10 and do a round
   LOADI 10
   STORE d16sD
@@ -45,6 +45,7 @@ SkipRound:
 
 Idx: DW 0 ; index for loop
 Offset: DW 0
+TenthUnitsInFoot: DW 2093 ; There are 209.2857... robot units in a foot
 
 StartSort:
   LOADI 1
@@ -288,7 +289,6 @@ Mask6:    DW &B01000000
 Mask7:    DW &B10000000
 LowByte:  DW &HFF      ; binary 00000000 1111111
 LowNibl:  DW &HF       ; 0000 0000 0000 1111
-
 
 Points:
   DW -4 ; Entry 00 x

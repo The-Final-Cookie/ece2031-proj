@@ -10,277 +10,278 @@ CONTENT
   BEGIN
     [000..7FF] : 0000;  -- Default to NOP
 
-           000 : B92C;  --   LOADI 300
-           001 : 9801;  --   OUT LEDS
-           002 : B8D5;  --   LOADI Points 
-           003 : 1824;  --   ADD Idx
-           004 : 1824;  --   ADD Idx
-           005 : 1025;  --   STORE Offset
-           006 : 8011;  --   CALL FeetToUnits
-           007 : 0825;  --   LOAD Offset
-           008 : 6801;  --   ADDI 1
-           009 : 1025;  --   STORE Offset
-           00A : 8011;  --   CALL FeetToUnits
-           00B : 0824;  --   LOAD Idx
-           00C : 6801;  --   ADDI 1
-           00D : 1024;  --   STORE Idx
-           00E : 6FF4;  --   ADDI -12
-           00F : 4026;  --   JZERO StartSort
-           010 : 2800;  --   JUMP ConvertToUnits
-           011 : 7025;  --   ILOAD Offset
-           012 : 107B;  --   STORE m16sA
-           013 : B82D;  --   LOADI 2093 ; There are 209.2857... robot units in a foot
-           014 : 107C;  --   STORE m16sB
-           015 : 8058;  --   CALL Mult16s ; Because we know that we won't be given values higher than 6
-           016 : 087F;  --   LOAD mres16sL ; We only need to load the low word 
-           017 : 10B3;  --   STORE d16sN ; and / 10 and do a round
+           000 : B8D6;  --   LOADI Points 
+           001 : 1824;  --   ADD Idx
+           002 : 1824;  --   ADD Idx
+           003 : 9801;  --   OUT LEDS
+           004 : 1025;  --   STORE Offset
+           005 : 8010;  --   CALL FeetToUnits
+           006 : 0825;  --   LOAD Offset
+           007 : 6801;  --   ADDI 1
+           008 : 1025;  --   STORE Offset
+           009 : 8010;  --   CALL FeetToUnits
+           00A : 0824;  --   LOAD Idx
+           00B : 6801;  --   ADDI 1
+           00C : 1024;  --   STORE Idx
+           00D : 6FF4;  --   ADDI -12
+           00E : 4027;  --   JZERO StartSort
+           00F : 2800;  --   JUMP ConvertToUnits
+           010 : 7025;  --   ILOAD Offset
+           011 : 107C;  --   STORE m16sA
+           012 : 0826;  --   LOAD TenthUnitsInFoot
+           013 : 107D;  --   STORE m16sB
+           014 : 8059;  --   CALL Mult16s ; Because we know that we won't be given values higher than 6
+           015 : 0880;  --   LOAD mres16sL ; We only need to load the low word 
+           016 : 9801;  --   OUT LEDS
+           017 : 10B4;  --   STORE d16sN ; and / 10 and do a round
            018 : B80A;  --   LOADI 10
-           019 : 10B4;  --   STORE d16sD
-           01A : 8081;  --   CALL Div16s
-           01B : 08BA;  --   LOAD dres16sR ; and round
+           019 : 10B5;  --   STORE d16sD
+           01A : 8082;  --   CALL Div16s
+           01B : 08BB;  --   LOAD dres16sR ; and round
            01C : 6FFB;  --   ADDI -5
            01D : 3021;  --   JNEG SkipRound
-           01E : 08B9;  --   LOAD dres16sQ
+           01E : 08BA;  --   LOAD dres16sQ
            01F : 6801;  --   ADDI 1
-           020 : 10B9;  --   STORE dres16sQ
-           021 : 08B9;  --   LOAD dres16sQ
+           020 : 10BA;  --   STORE dres16sQ
+           021 : 08BA;  --   LOAD dres16sQ
            022 : 7825;  --   ISTORE Offset
            023 : 8800;  --   RETURN
            024 : 0000;  -- Idx: DW 0 ; index for loop
            025 : 0000;  -- Offset: DW 0
-           026 : B801;  --   LOADI 1
-           027 : 9807;  --   OUT XLEDS
-           028 : 2826;  --   JUMP StartSort
-           029 : 0853;  -- 	LOAD   L2X
-           02A : 80BB;  -- 	CALL   Abs
-           02B : 1055;  -- 	STORE  L2T1
-           02C : 0854;  -- 	LOAD   L2Y
-           02D : 80BB;  -- 	CALL   Abs
-           02E : 2055;  -- 	SUB    L2T1
-           02F : 304B;  -- 	JNEG   GDSwap    ; swap if needed to get largest value in X
-           030 : 1855;  -- 	ADD    L2T1
-           031 : 107B;  -- 	STORE  m16sa
-           032 : B8F6;  -- 	LOADI  246       ; max * 246
-           033 : 107C;  -- 	STORE  m16sB
-           034 : 8058;  -- 	CALL   Mult16s
-           035 : 0880;  -- 	LOAD   mres16sH
-           036 : 6008;  -- 	SHIFT  8
-           037 : 1056;  -- 	STORE  L2T2
-           038 : 087F;  -- 	LOAD   mres16sL
-           039 : 6018;  -- 	SHIFT  -8        ; / 256
-           03A : 48D3;  -- 	AND    LowByte
-           03B : 5056;  -- 	OR     L2T2
-           03C : 1057;  -- 	STORE  L2T3
-           03D : 0855;  -- 	LOAD   L2T1
-           03E : 107B;  -- 	STORE  m16sa
-           03F : B868;  -- 	LOADI  104       ; min * 104
-           040 : 107C;  -- 	STORE  m16sB
-           041 : 8058;  -- 	CALL   Mult16s
-           042 : 0880;  -- 	LOAD   mres16sH
-           043 : 6008;  -- 	SHIFT  8
-           044 : 1056;  -- 	STORE  L2T2
-           045 : 087F;  -- 	LOAD   mres16sL
-           046 : 6018;  -- 	SHIFT  -8        ; / 256
-           047 : 48D3;  -- 	AND    LowByte
-           048 : 5056;  -- 	OR     L2T2
-           049 : 1857;  -- 	ADD    L2T3     ; sum
-           04A : 8800;  -- 	RETURN
-           04B : 1855;  -- 	ADD    L2T1
-           04C : 1056;  -- 	STORE  L2T2
-           04D : 0855;  -- 	LOAD   L2T1
-           04E : 1057;  -- 	STORE  L2T3
-           04F : 0856;  -- 	LOAD   L2T2
-           050 : 1055;  -- 	STORE  L2T1
-           051 : 0857;  -- 	LOAD   L2T3
-           052 : 2831;  -- 	JUMP   CalcDist
-           053 : 0000;  -- L2X:  DW 0
-           054 : 0000;  -- L2Y:  DW 0
-           055 : 0000;  -- L2T1: DW 0
-           056 : 0000;  -- L2T2: DW 0
-           057 : 0000;  -- L2T3: DW 0
-           058 : B800;  -- 	LOADI  0
-           059 : 107D;  -- 	STORE  m16sc        ; clear carry
-           05A : 1080;  -- 	STORE  mres16sH     ; clear result
-           05B : B810;  -- 	LOADI  16           ; load 16 to counter
-           05C : 107E;  -- 	STORE  mcnt16s      
-           05D : 087D;  -- 	LOAD   m16sc        ; check the carry (from previous iteration)
-           05E : 4062;  -- 	JZERO  Mult16s_noc  ; if no carry, move on
-           05F : 0880;  -- 	LOAD   mres16sH     ; if a carry, 
-           060 : 187B;  -- 	ADD    m16sA        ;  add multiplicand to result H
-           061 : 1080;  -- 	STORE  mres16sH
-           062 : 087C;  -- 	LOAD   m16sB
-           063 : 48C1;  -- 	AND    One          ; check bit 0 of multiplier
-           064 : 107D;  -- 	STORE  m16sc        ; save as next carry
-           065 : 4069;  -- 	JZERO  Mult16s_sh   ; if no carry, move on to shift
-           066 : 0880;  -- 	LOAD   mres16sH     ; if bit 0 set,
-           067 : 207B;  -- 	SUB    m16sA        ;  subtract multiplicand from result H
-           068 : 1080;  -- 	STORE  mres16sH
-           069 : 087C;  -- 	LOAD   m16sB
-           06A : 6011;  -- 	SHIFT  -1           ; shift result L >>1
-           06B : 487A;  -- 	AND    c7FFF        ; clear msb
-           06C : 107C;  -- 	STORE  m16sB
-           06D : 0880;  -- 	LOAD   mres16sH     ; load result H
-           06E : 600F;  -- 	SHIFT  15           ; move lsb to msb
-           06F : 507C;  -- 	OR     m16sB
-           070 : 107C;  -- 	STORE  m16sB        ; result L now includes carry out from H
-           071 : 0880;  -- 	LOAD   mres16sH
-           072 : 6011;  -- 	SHIFT  -1
-           073 : 1080;  -- 	STORE  mres16sH     ; shift result H >>1
-           074 : 087E;  -- 	LOAD   mcnt16s
-           075 : 6FFF;  -- 	ADDI   -1           ; check counter
-           076 : 385C;  -- 	JPOS   Mult16s_loop ; need to iterate 16 times
-           077 : 087C;  -- 	LOAD   m16sB
-           078 : 107F;  -- 	STORE  mres16sL     ; multiplier and result L shared a word
-           079 : 8800;  -- 	RETURN              ; Done
-           07A : 7FFF;  -- c7FFF: DW &H7FFF
-           07B : 0000;  -- m16sA: DW 0 ; multiplicand
-           07C : 0000;  -- m16sB: DW 0 ; multipler
-           07D : 0000;  -- m16sc: DW 0 ; carry
-           07E : 0000;  -- mcnt16s: DW 0 ; counter
-           07F : 0000;  -- mres16sL: DW 0 ; result low
-           080 : 0000;  -- mres16sH: DW 0 ; result high
-           081 : B800;  -- 	LOADI  0
-           082 : 10BA;  -- 	STORE  dres16sR     ; clear remainder result
-           083 : 10B7;  -- 	STORE  d16sC1       ; clear carry
-           084 : 08B3;  -- 	LOAD   d16sN
-           085 : 58B4;  -- 	XOR    d16sD
-           086 : 10B5;  -- 	STORE  d16sS        ; sign determination = N XOR D
-           087 : B811;  -- 	LOADI  17
-           088 : 10B6;  -- 	STORE  d16sT        ; preload counter with 17 (16+1)
-           089 : 08B4;  -- 	LOAD   d16sD
-           08A : 80BB;  -- 	CALL   Abs          ; take absolute value of denominator
-           08B : 10B4;  -- 	STORE  d16sD
-           08C : 08B3;  -- 	LOAD   d16sN
-           08D : 80BB;  -- 	CALL   Abs          ; take absolute value of numerator
-           08E : 10B3;  -- 	STORE  d16sN
-           08F : 08B3;  -- 	LOAD   d16sN
-           090 : 601F;  -- 	SHIFT  -15          ; get msb
-           091 : 48C1;  -- 	AND    One          ; only msb (because shift is arithmetic)
-           092 : 10B8;  -- 	STORE  d16sC2       ; store as carry
-           093 : 08B3;  -- 	LOAD   d16sN
-           094 : 6001;  -- 	SHIFT  1            ; shift <<1
-           095 : 50B7;  -- 	OR     d16sC1       ; with carry
-           096 : 10B3;  -- 	STORE  d16sN
-           097 : 08B6;  -- 	LOAD   d16sT
-           098 : 6FFF;  -- 	ADDI   -1           ; decrement counter
-           099 : 40A9;  -- 	JZERO  Div16s_sign  ; if finished looping, finalize result
-           09A : 10B6;  -- 	STORE  d16sT
-           09B : 08BA;  -- 	LOAD   dres16sR
-           09C : 6001;  -- 	SHIFT  1            ; shift remainder
-           09D : 50B8;  -- 	OR     d16sC2       ; with carry from other shift
-           09E : 20B4;  -- 	SUB    d16sD        ; subtract denominator from remainder
-           09F : 30A4;  -- 	JNEG   Div16s_add   ; if negative, need to add it back
-           0A0 : 10BA;  -- 	STORE  dres16sR
-           0A1 : B801;  -- 	LOADI  1
-           0A2 : 10B7;  -- 	STORE  d16sC1       ; set carry
-           0A3 : 288F;  -- 	JUMP   Div16s_loop
-           0A4 : 18B4;  -- 	ADD    d16sD        ; add denominator back in
-           0A5 : 10BA;  -- 	STORE  dres16sR
-           0A6 : B800;  -- 	LOADI  0
-           0A7 : 10B7;  -- 	STORE  d16sC1       ; clear carry
-           0A8 : 288F;  -- 	JUMP   Div16s_loop
-           0A9 : 08B3;  -- 	LOAD   d16sN
-           0AA : 10B9;  -- 	STORE  dres16sQ     ; numerator was used to hold quotient result
-           0AB : 08B5;  -- 	LOAD   d16sS        ; check the sign indicator
-           0AC : 30AE;  -- 	JNEG   Div16s_neg
-           0AD : 8800;  -- 	RETURN
-           0AE : 08B9;  -- 	LOAD   dres16sQ     ; need to negate the result
-           0AF : 58BF;  -- 	XOR    NegOne
-           0B0 : 6801;  -- 	ADDI   1
-           0B1 : 10B9;  -- 	STORE  dres16sQ
-           0B2 : 8800;  -- 	RETURN	
-           0B3 : 0000;  -- d16sN: DW 0 ; numerator
-           0B4 : 0000;  -- d16sD: DW 0 ; denominator
-           0B5 : 0000;  -- d16sS: DW 0 ; sign value
-           0B6 : 0000;  -- d16sT: DW 0 ; temp counter
-           0B7 : 0000;  -- d16sC1: DW 0 ; carry value
-           0B8 : 0000;  -- d16sC2: DW 0 ; carry value
-           0B9 : 0000;  -- dres16sQ: DW 0 ; quotient result
-           0BA : 0000;  -- dres16sR: DW 0 ; remainder result
-           0BB : 38BE;  -- 	JPOS   Abs_r
-           0BC : 58BF;  -- 	XOR    NegOne       ; Flip all bits
-           0BD : 6801;  -- 	ADDI   1            ; Add one (i.e. negate number)
-           0BE : 8800;  -- 	RETURN
-           0BF : FFFF;  -- NegOne:   DW -1
-           0C0 : 0000;  -- Zero:     DW 0
-           0C1 : 0001;  -- One:      DW 1
-           0C2 : 0002;  -- Two:      DW 2
-           0C3 : 0003;  -- Three:    DW 3
-           0C4 : 0004;  -- Four:     DW 4
-           0C5 : 0005;  -- Five:     DW 5
-           0C6 : 0006;  -- Six:      DW 6
-           0C7 : 0007;  -- Seven:    DW 7
-           0C8 : 0008;  -- Eight:    DW 8
-           0C9 : 0009;  -- Nine:     DW 9
-           0CA : 000A;  -- Ten:      DW 10
-           0CB : 0001;  -- Mask0:    DW &B00000001
-           0CC : 0002;  -- Mask1:    DW &B00000010
-           0CD : 0004;  -- Mask2:    DW &B00000100
-           0CE : 0008;  -- Mask3:    DW &B00001000
-           0CF : 0010;  -- Mask4:    DW &B00010000
-           0D0 : 0020;  -- Mask5:    DW &B00100000
-           0D1 : 0040;  -- Mask6:    DW &B01000000
-           0D2 : 0080;  -- Mask7:    DW &B10000000
-           0D3 : 00FF;  -- LowByte:  DW &HFF      ; binary 00000000 1111111
-           0D4 : 000F;  -- LowNibl:  DW &HF       ; 0000 0000 0000 1111
-           0D5 : FFFC;  --   DW -4 ; Entry 00 x
-           0D6 : 0001;  --   DW 1 ; Entry 00 y
-           0D7 : 0003;  --   DW 3 ; Entry 01 x
-           0D8 : FFFE;  --   DW -2 ; Entry 01 y
-           0D9 : FFFD;  --   DW -3 ; Entry 02 x
-           0DA : FFFF;  --   DW -1 ; Entry 02 y
-           0DB : 0001;  --   DW 1 ; Entry 03 x
-           0DC : 0004;  --   DW 4 ; Entry 03 y
-           0DD : FFFE;  --   DW -2 ; Entry 04 x
-           0DE : FFFC;  --   DW -4 ; Entry 04 y
-           0DF : 0000;  --   DW 0 ; Entry 05 x
-           0E0 : FFFB;  --   DW -5 ; Entry 05 y
-           0E1 : FFFD;  --   DW -3 ; Entry 06 x
-           0E2 : 0002;  --   DW 2 ; Entry 06 y
-           0E3 : 0002;  --   DW 2 ; Entry 07 x
-           0E4 : FFFD;  --   DW -3 ; Entry 07 y
-           0E5 : 0002;  --   DW 2 ; Entry 08 x
-           0E6 : 0005;  --   DW 5 ; Entry 08 y
-           0E7 : FFFE;  --   DW -2 ; Entry 09 x
-           0E8 : 0004;  --   DW 4 ; Entry 09 y
-           0E9 : 0003;  --   DW 3 ; Entry 10 x
-           0EA : FFFD;  --   DW -3 ; Entry 10 y
-           0EB : FFFC;  --   DW -4 ; Entry 11 x
-           0EC : FFFE;  --   DW -2 ; Entry 11 y
-           0ED : 0000;  --   DW 0 ; Entry 00 x
-           0EE : 0000;  --   DW 0 ; Entry 00 y
-           0EF : 0000;  --   DW 0 ; Entry 00 count
-           0F0 : 0000;  --   DW 0 ; Entry 01 x
-           0F1 : 0000;  --   DW 0 ; Entry 01 y
-           0F2 : 0000;  --   DW 0 ; Entry 01 count
-           0F3 : 0000;  --   DW 0 ; Entry 02 x
-           0F4 : 0000;  --   DW 0 ; Entry 02 y
-           0F5 : 0000;  --   DW 0 ; Entry 02 count
-           0F6 : 0000;  --   DW 0 ; Entry 03 x
-           0F7 : 0000;  --   DW 0 ; Entry 03 y
-           0F8 : 0000;  --   DW 0 ; Entry 03 count
-           0F9 : 0000;  --   DW 0 ; Entry 04 x
-           0FA : 0000;  --   DW 0 ; Entry 04 y
-           0FB : 0000;  --   DW 0 ; Entry 04 count
-           0FC : 0000;  --   DW 0 ; Entry 05 x
-           0FD : 0000;  --   DW 0 ; Entry 05 y
-           0FE : 0000;  --   DW 0 ; Entry 05 count
-           0FF : 0000;  --   DW 0 ; Entry 06 x
-           100 : 0000;  --   DW 0 ; Entry 06 y
-           101 : 0000;  --   DW 0 ; Entry 06 count
-           102 : 0000;  --   DW 0 ; Entry 07 x
-           103 : 0000;  --   DW 0 ; Entry 07 y
-           104 : 0000;  --   DW 0 ; Entry 07 count
-           105 : 0000;  --   DW 0 ; Entry 08 x
-           106 : 0000;  --   DW 0 ; Entry 08 y
-           107 : 0000;  --   DW 0 ; Entry 08 count
-           108 : 0000;  --   DW 0 ; Entry 09 x
-           109 : 0000;  --   DW 0 ; Entry 09 y
-           10A : 0000;  --   DW 0 ; Entry 09 count
-           10B : 0000;  --   DW 0 ; Entry 10 x
-           10C : 0000;  --   DW 0 ; Entry 10 y
-           10D : 0000;  --   DW 0 ; Entry 10 count
-           10E : 0000;  --   DW 0 ; Entry 11 x
-           10F : 0000;  --   DW 0 ; Entry 11 y
-           110 : 0000;  --   DW 0 ; Entry 11 count
+           026 : 082D;  -- TenthUnitsInFoot: DW 2093 ; There are 209.2857... robot units in a foot
+           027 : B801;  --   LOADI 1
+           028 : 9807;  --   OUT XLEDS
+           029 : 2827;  --   JUMP StartSort
+           02A : 0854;  -- 	LOAD   L2X
+           02B : 80BC;  -- 	CALL   Abs
+           02C : 1056;  -- 	STORE  L2T1
+           02D : 0855;  -- 	LOAD   L2Y
+           02E : 80BC;  -- 	CALL   Abs
+           02F : 2056;  -- 	SUB    L2T1
+           030 : 304C;  -- 	JNEG   GDSwap    ; swap if needed to get largest value in X
+           031 : 1856;  -- 	ADD    L2T1
+           032 : 107C;  -- 	STORE  m16sa
+           033 : B8F6;  -- 	LOADI  246       ; max * 246
+           034 : 107D;  -- 	STORE  m16sB
+           035 : 8059;  -- 	CALL   Mult16s
+           036 : 0881;  -- 	LOAD   mres16sH
+           037 : 6008;  -- 	SHIFT  8
+           038 : 1057;  -- 	STORE  L2T2
+           039 : 0880;  -- 	LOAD   mres16sL
+           03A : 6018;  -- 	SHIFT  -8        ; / 256
+           03B : 48D4;  -- 	AND    LowByte
+           03C : 5057;  -- 	OR     L2T2
+           03D : 1058;  -- 	STORE  L2T3
+           03E : 0856;  -- 	LOAD   L2T1
+           03F : 107C;  -- 	STORE  m16sa
+           040 : B868;  -- 	LOADI  104       ; min * 104
+           041 : 107D;  -- 	STORE  m16sB
+           042 : 8059;  -- 	CALL   Mult16s
+           043 : 0881;  -- 	LOAD   mres16sH
+           044 : 6008;  -- 	SHIFT  8
+           045 : 1057;  -- 	STORE  L2T2
+           046 : 0880;  -- 	LOAD   mres16sL
+           047 : 6018;  -- 	SHIFT  -8        ; / 256
+           048 : 48D4;  -- 	AND    LowByte
+           049 : 5057;  -- 	OR     L2T2
+           04A : 1858;  -- 	ADD    L2T3     ; sum
+           04B : 8800;  -- 	RETURN
+           04C : 1856;  -- 	ADD    L2T1
+           04D : 1057;  -- 	STORE  L2T2
+           04E : 0856;  -- 	LOAD   L2T1
+           04F : 1058;  -- 	STORE  L2T3
+           050 : 0857;  -- 	LOAD   L2T2
+           051 : 1056;  -- 	STORE  L2T1
+           052 : 0858;  -- 	LOAD   L2T3
+           053 : 2832;  -- 	JUMP   CalcDist
+           054 : 0000;  -- L2X:  DW 0
+           055 : 0000;  -- L2Y:  DW 0
+           056 : 0000;  -- L2T1: DW 0
+           057 : 0000;  -- L2T2: DW 0
+           058 : 0000;  -- L2T3: DW 0
+           059 : B800;  -- 	LOADI  0
+           05A : 107E;  -- 	STORE  m16sc        ; clear carry
+           05B : 1081;  -- 	STORE  mres16sH     ; clear result
+           05C : B810;  -- 	LOADI  16           ; load 16 to counter
+           05D : 107F;  -- 	STORE  mcnt16s      
+           05E : 087E;  -- 	LOAD   m16sc        ; check the carry (from previous iteration)
+           05F : 4063;  -- 	JZERO  Mult16s_noc  ; if no carry, move on
+           060 : 0881;  -- 	LOAD   mres16sH     ; if a carry, 
+           061 : 187C;  -- 	ADD    m16sA        ;  add multiplicand to result H
+           062 : 1081;  -- 	STORE  mres16sH
+           063 : 087D;  -- 	LOAD   m16sB
+           064 : 48C2;  -- 	AND    One          ; check bit 0 of multiplier
+           065 : 107E;  -- 	STORE  m16sc        ; save as next carry
+           066 : 406A;  -- 	JZERO  Mult16s_sh   ; if no carry, move on to shift
+           067 : 0881;  -- 	LOAD   mres16sH     ; if bit 0 set,
+           068 : 207C;  -- 	SUB    m16sA        ;  subtract multiplicand from result H
+           069 : 1081;  -- 	STORE  mres16sH
+           06A : 087D;  -- 	LOAD   m16sB
+           06B : 6011;  -- 	SHIFT  -1           ; shift result L >>1
+           06C : 487B;  -- 	AND    c7FFF        ; clear msb
+           06D : 107D;  -- 	STORE  m16sB
+           06E : 0881;  -- 	LOAD   mres16sH     ; load result H
+           06F : 600F;  -- 	SHIFT  15           ; move lsb to msb
+           070 : 507D;  -- 	OR     m16sB
+           071 : 107D;  -- 	STORE  m16sB        ; result L now includes carry out from H
+           072 : 0881;  -- 	LOAD   mres16sH
+           073 : 6011;  -- 	SHIFT  -1
+           074 : 1081;  -- 	STORE  mres16sH     ; shift result H >>1
+           075 : 087F;  -- 	LOAD   mcnt16s
+           076 : 6FFF;  -- 	ADDI   -1           ; check counter
+           077 : 385D;  -- 	JPOS   Mult16s_loop ; need to iterate 16 times
+           078 : 087D;  -- 	LOAD   m16sB
+           079 : 1080;  -- 	STORE  mres16sL     ; multiplier and result L shared a word
+           07A : 8800;  -- 	RETURN              ; Done
+           07B : 7FFF;  -- c7FFF: DW &H7FFF
+           07C : 0000;  -- m16sA: DW 0 ; multiplicand
+           07D : 0000;  -- m16sB: DW 0 ; multipler
+           07E : 0000;  -- m16sc: DW 0 ; carry
+           07F : 0000;  -- mcnt16s: DW 0 ; counter
+           080 : 0000;  -- mres16sL: DW 0 ; result low
+           081 : 0000;  -- mres16sH: DW 0 ; result high
+           082 : B800;  -- 	LOADI  0
+           083 : 10BB;  -- 	STORE  dres16sR     ; clear remainder result
+           084 : 10B8;  -- 	STORE  d16sC1       ; clear carry
+           085 : 08B4;  -- 	LOAD   d16sN
+           086 : 58B5;  -- 	XOR    d16sD
+           087 : 10B6;  -- 	STORE  d16sS        ; sign determination = N XOR D
+           088 : B811;  -- 	LOADI  17
+           089 : 10B7;  -- 	STORE  d16sT        ; preload counter with 17 (16+1)
+           08A : 08B5;  -- 	LOAD   d16sD
+           08B : 80BC;  -- 	CALL   Abs          ; take absolute value of denominator
+           08C : 10B5;  -- 	STORE  d16sD
+           08D : 08B4;  -- 	LOAD   d16sN
+           08E : 80BC;  -- 	CALL   Abs          ; take absolute value of numerator
+           08F : 10B4;  -- 	STORE  d16sN
+           090 : 08B4;  -- 	LOAD   d16sN
+           091 : 601F;  -- 	SHIFT  -15          ; get msb
+           092 : 48C2;  -- 	AND    One          ; only msb (because shift is arithmetic)
+           093 : 10B9;  -- 	STORE  d16sC2       ; store as carry
+           094 : 08B4;  -- 	LOAD   d16sN
+           095 : 6001;  -- 	SHIFT  1            ; shift <<1
+           096 : 50B8;  -- 	OR     d16sC1       ; with carry
+           097 : 10B4;  -- 	STORE  d16sN
+           098 : 08B7;  -- 	LOAD   d16sT
+           099 : 6FFF;  -- 	ADDI   -1           ; decrement counter
+           09A : 40AA;  -- 	JZERO  Div16s_sign  ; if finished looping, finalize result
+           09B : 10B7;  -- 	STORE  d16sT
+           09C : 08BB;  -- 	LOAD   dres16sR
+           09D : 6001;  -- 	SHIFT  1            ; shift remainder
+           09E : 50B9;  -- 	OR     d16sC2       ; with carry from other shift
+           09F : 20B5;  -- 	SUB    d16sD        ; subtract denominator from remainder
+           0A0 : 30A5;  -- 	JNEG   Div16s_add   ; if negative, need to add it back
+           0A1 : 10BB;  -- 	STORE  dres16sR
+           0A2 : B801;  -- 	LOADI  1
+           0A3 : 10B8;  -- 	STORE  d16sC1       ; set carry
+           0A4 : 2890;  -- 	JUMP   Div16s_loop
+           0A5 : 18B5;  -- 	ADD    d16sD        ; add denominator back in
+           0A6 : 10BB;  -- 	STORE  dres16sR
+           0A7 : B800;  -- 	LOADI  0
+           0A8 : 10B8;  -- 	STORE  d16sC1       ; clear carry
+           0A9 : 2890;  -- 	JUMP   Div16s_loop
+           0AA : 08B4;  -- 	LOAD   d16sN
+           0AB : 10BA;  -- 	STORE  dres16sQ     ; numerator was used to hold quotient result
+           0AC : 08B6;  -- 	LOAD   d16sS        ; check the sign indicator
+           0AD : 30AF;  -- 	JNEG   Div16s_neg
+           0AE : 8800;  -- 	RETURN
+           0AF : 08BA;  -- 	LOAD   dres16sQ     ; need to negate the result
+           0B0 : 58C0;  -- 	XOR    NegOne
+           0B1 : 6801;  -- 	ADDI   1
+           0B2 : 10BA;  -- 	STORE  dres16sQ
+           0B3 : 8800;  -- 	RETURN	
+           0B4 : 0000;  -- d16sN: DW 0 ; numerator
+           0B5 : 0000;  -- d16sD: DW 0 ; denominator
+           0B6 : 0000;  -- d16sS: DW 0 ; sign value
+           0B7 : 0000;  -- d16sT: DW 0 ; temp counter
+           0B8 : 0000;  -- d16sC1: DW 0 ; carry value
+           0B9 : 0000;  -- d16sC2: DW 0 ; carry value
+           0BA : 0000;  -- dres16sQ: DW 0 ; quotient result
+           0BB : 0000;  -- dres16sR: DW 0 ; remainder result
+           0BC : 38BF;  -- 	JPOS   Abs_r
+           0BD : 58C0;  -- 	XOR    NegOne       ; Flip all bits
+           0BE : 6801;  -- 	ADDI   1            ; Add one (i.e. negate number)
+           0BF : 8800;  -- 	RETURN
+           0C0 : FFFF;  -- NegOne:   DW -1
+           0C1 : 0000;  -- Zero:     DW 0
+           0C2 : 0001;  -- One:      DW 1
+           0C3 : 0002;  -- Two:      DW 2
+           0C4 : 0003;  -- Three:    DW 3
+           0C5 : 0004;  -- Four:     DW 4
+           0C6 : 0005;  -- Five:     DW 5
+           0C7 : 0006;  -- Six:      DW 6
+           0C8 : 0007;  -- Seven:    DW 7
+           0C9 : 0008;  -- Eight:    DW 8
+           0CA : 0009;  -- Nine:     DW 9
+           0CB : 000A;  -- Ten:      DW 10
+           0CC : 0001;  -- Mask0:    DW &B00000001
+           0CD : 0002;  -- Mask1:    DW &B00000010
+           0CE : 0004;  -- Mask2:    DW &B00000100
+           0CF : 0008;  -- Mask3:    DW &B00001000
+           0D0 : 0010;  -- Mask4:    DW &B00010000
+           0D1 : 0020;  -- Mask5:    DW &B00100000
+           0D2 : 0040;  -- Mask6:    DW &B01000000
+           0D3 : 0080;  -- Mask7:    DW &B10000000
+           0D4 : 00FF;  -- LowByte:  DW &HFF      ; binary 00000000 1111111
+           0D5 : 000F;  -- LowNibl:  DW &HF       ; 0000 0000 0000 1111
+           0D6 : FFFC;  --   DW -4 ; Entry 00 x
+           0D7 : 0001;  --   DW 1 ; Entry 00 y
+           0D8 : 0003;  --   DW 3 ; Entry 01 x
+           0D9 : FFFE;  --   DW -2 ; Entry 01 y
+           0DA : FFFD;  --   DW -3 ; Entry 02 x
+           0DB : FFFF;  --   DW -1 ; Entry 02 y
+           0DC : 0001;  --   DW 1 ; Entry 03 x
+           0DD : 0004;  --   DW 4 ; Entry 03 y
+           0DE : FFFE;  --   DW -2 ; Entry 04 x
+           0DF : FFFC;  --   DW -4 ; Entry 04 y
+           0E0 : 0000;  --   DW 0 ; Entry 05 x
+           0E1 : FFFB;  --   DW -5 ; Entry 05 y
+           0E2 : FFFD;  --   DW -3 ; Entry 06 x
+           0E3 : 0002;  --   DW 2 ; Entry 06 y
+           0E4 : 0002;  --   DW 2 ; Entry 07 x
+           0E5 : FFFD;  --   DW -3 ; Entry 07 y
+           0E6 : 0002;  --   DW 2 ; Entry 08 x
+           0E7 : 0005;  --   DW 5 ; Entry 08 y
+           0E8 : FFFE;  --   DW -2 ; Entry 09 x
+           0E9 : 0004;  --   DW 4 ; Entry 09 y
+           0EA : 0003;  --   DW 3 ; Entry 10 x
+           0EB : FFFD;  --   DW -3 ; Entry 10 y
+           0EC : FFFC;  --   DW -4 ; Entry 11 x
+           0ED : FFFE;  --   DW -2 ; Entry 11 y
+           0EE : 0000;  --   DW 0 ; Entry 00 x
+           0EF : 0000;  --   DW 0 ; Entry 00 y
+           0F0 : 0000;  --   DW 0 ; Entry 00 count
+           0F1 : 0000;  --   DW 0 ; Entry 01 x
+           0F2 : 0000;  --   DW 0 ; Entry 01 y
+           0F3 : 0000;  --   DW 0 ; Entry 01 count
+           0F4 : 0000;  --   DW 0 ; Entry 02 x
+           0F5 : 0000;  --   DW 0 ; Entry 02 y
+           0F6 : 0000;  --   DW 0 ; Entry 02 count
+           0F7 : 0000;  --   DW 0 ; Entry 03 x
+           0F8 : 0000;  --   DW 0 ; Entry 03 y
+           0F9 : 0000;  --   DW 0 ; Entry 03 count
+           0FA : 0000;  --   DW 0 ; Entry 04 x
+           0FB : 0000;  --   DW 0 ; Entry 04 y
+           0FC : 0000;  --   DW 0 ; Entry 04 count
+           0FD : 0000;  --   DW 0 ; Entry 05 x
+           0FE : 0000;  --   DW 0 ; Entry 05 y
+           0FF : 0000;  --   DW 0 ; Entry 05 count
+           100 : 0000;  --   DW 0 ; Entry 06 x
+           101 : 0000;  --   DW 0 ; Entry 06 y
+           102 : 0000;  --   DW 0 ; Entry 06 count
+           103 : 0000;  --   DW 0 ; Entry 07 x
+           104 : 0000;  --   DW 0 ; Entry 07 y
+           105 : 0000;  --   DW 0 ; Entry 07 count
+           106 : 0000;  --   DW 0 ; Entry 08 x
+           107 : 0000;  --   DW 0 ; Entry 08 y
+           108 : 0000;  --   DW 0 ; Entry 08 count
+           109 : 0000;  --   DW 0 ; Entry 09 x
+           10A : 0000;  --   DW 0 ; Entry 09 y
+           10B : 0000;  --   DW 0 ; Entry 09 count
+           10C : 0000;  --   DW 0 ; Entry 10 x
+           10D : 0000;  --   DW 0 ; Entry 10 y
+           10E : 0000;  --   DW 0 ; Entry 10 count
+           10F : 0000;  --   DW 0 ; Entry 11 x
+           110 : 0000;  --   DW 0 ; Entry 11 y
+           111 : 0000;  --   DW 0 ; Entry 11 count
   END;

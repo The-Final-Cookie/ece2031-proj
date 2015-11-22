@@ -27,10 +27,10 @@ int main(int argc, char** argv) {
 
   SComp scomp(mifData, isCode);
   do {
-    scomp.stepInstruction();
-    cout << scomp.getRedLeds() << endl;
+    scomp.stepInstruction(1000);
   } while(!scomp.getXLeds());
-    auto omg = scomp.getMemory();
+
+  auto omg = scomp.getMemory();
   
   for (auto entry : mifData) {
     cout << std::setfill('0') << std::setw(std::ceil(bitwidth / 4)) << std::hex << entry;

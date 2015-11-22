@@ -888,7 +888,7 @@ void SComp::jump() {
 }
 
 void SComp::jneg() {
-  if (ac < 0) {
+  if (ac & 0x8000) {
     pc = ir & address_mask;
   }
 
@@ -896,7 +896,7 @@ void SComp::jneg() {
 }
 
 void SComp::jpos() {
-  if (ac > 0) {
+  if (!(ac & 0x8000)) {
     pc = ir & address_mask;
   }
 
@@ -929,9 +929,9 @@ void SComp::xor_() {
 void SComp::shift() {
   // mdr is sign-magnitude 5 bit... because.
   if (mdr & 0x10) { // negative shift -> right shift
-    ac >>= mdr & 0xF;
+    ac >>= (mdr & 0xF);
   } else {
-    ac <<= mdr & 0xF;
+    ac <<= (mdr & 0xF);
   }
   
   state = State::FETCH;
