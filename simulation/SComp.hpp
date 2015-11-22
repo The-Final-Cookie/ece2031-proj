@@ -18,6 +18,7 @@ public:
   SComp(std::vector<int> const& memory, std::vector<bool> const& isCode);
   void stepInstruction(size_t count = 1);
   uint16_t getPC() const;
+  void setDebug(bool);
 
   std::vector<int> getMemory() const;
   bool wroteToCode() const;
@@ -284,7 +285,6 @@ private:
 
   State state;
   std::array<uint16_t, 10> pc_stack;
-  //uint16_t io_in;
   uint16_t ac;
   uint16_t ac_saved;
   uint16_t ir;
@@ -350,6 +350,8 @@ private:
 
   double true_lvel;
   double true_rvel;
+
+  bool debugMode;
 };
 
 }

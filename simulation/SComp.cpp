@@ -36,6 +36,10 @@ uint16_t SComp::getPC() const {
   return pc;
 }
 
+void SComp::setDebug(bool debug) {
+  debugMode = debug;
+}
+
 std::vector<int> SComp::getMemory() const {
   return memory;
 }
@@ -176,10 +180,10 @@ void SComp::runState() {
   if (mw) {
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];
-    // if (m_wroteToCode) {
-    //   std::cerr << "Warning: write to code pc: " << pc << ", address: "
-    //     << mem_addr << ", value: " << ac << endl;
-    // }
+    if (debugMode && m_wroteToCode) {
+      std::cerr << "Warning: write to code pc: " << pc << ", address: "
+        << mem_addr << ", value: " << ac << endl;
+    }
   } else {
     mdr = memory[mem_addr];
     mdrIsCode = isCode[mem_addr];
@@ -304,7 +308,6 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Leds:
-        cout << "here " << ac << endl;
         m_io_redLeds = ac;
         break;
       case IOAddr::Timer:
@@ -772,78 +775,102 @@ void SComp::fetchAndHandleInt() {
 void SComp::decode() {
   switch (ir >> 11) {
     case 0x0:
+      if (debugMode) cout << pc << " " << "state = State::FETCH;" << endl;
       state = State::FETCH;
       break;
     case 0x1:
+      if (debugMode) cout << pc << " " << "state = State::EX_LOAD;" << endl;
       state = State::EX_LOAD;
       break;
     case 0x2:
+      if (debugMode) cout << pc << " " << "state = State::EX_STORE;" << endl;
       state = State::EX_STORE;
       break;
     case 0x3:
+      if (debugMode) cout << pc << " " << "state = State::EX_ADD;" << endl;
       state = State::EX_ADD;
       break;
     case 0x4:
+      if (debugMode) cout << pc << " " << "state = State::EX_SUB;" << endl;
       state = State::EX_SUB;
       break;
     case 0x5:
+      if (debugMode) cout << pc << " " << "state = State::EX_JUMP;" << endl;
       state = State::EX_JUMP;
       break;
     case 0x6:
+      if (debugMode) cout << pc << " " << "state = State::EX_JNEG;" << endl;
       state = State::EX_JNEG;
       break;
     case 0x7:
+      if (debugMode) cout << pc << " " << "state = State::EX_JPOS;" << endl;
       state = State::EX_JPOS;
       break;
     case 0x8:
+      if (debugMode) cout << pc << " " << "state = State::EX_JZERO;" << endl;
       state = State::EX_JZERO;
       break;
     case 0x9:
+      if (debugMode) cout << pc << " " << "state = State::EX_AND;" << endl;
       state = State::EX_AND;
       break;
     case 0xA:
+      if (debugMode) cout << pc << " " << "state = State::EX_OR;" << endl;
       state = State::EX_OR;
       break;
     case 0xB:
+      if (debugMode) cout << pc << " " << "state = State::EX_XOR;" << endl;
       state = State::EX_XOR;
       break;
     case 0xC:
+      if (debugMode) cout << pc << " " << "state = State::EX_SHIFT;" << endl;
       state = State::EX_SHIFT;
       break;
     case 0xD:
+      if (debugMode) cout << pc << " " << "state = State::EX_ADDI;" << endl;
       state = State::EX_ADDI;
       break;
     case 0xE:
+      if (debugMode) cout << pc << " " << "state = State::EX_ILOAD;" << endl;
       state = State::EX_ILOAD;
       break;
     case 0xF:
+      if (debugMode) cout << pc << " " << "state = State::EX_ISTORE;" << endl;
       state = State::EX_ISTORE;
       break;
     case 0x10:
+      if (debugMode) cout << pc << " " << "state = State::EX_CALL;" << endl;
       state = State::EX_CALL;
       break;
     case 0x11:
+      if (debugMode) cout << pc << " " << "state = State::EX_RETURN;" << endl;
       state = State::EX_RETURN;
       break;
     case 0x12:
+      if (debugMode) cout << pc << " " << "state = State::EX_IN;" << endl;
       state = State::EX_IN;
       break;
     case 0x13:
+      if (debugMode) cout << pc << " " << "state = State::EX_OUT;" << endl;
       state = State::EX_OUT;
       io_write_int = true;
       break;
     case 0x14: // CLI
+      if (debugMode) cout << pc << " " << "CLI" << endl;
       state = State::FETCH;
       iie &= (~ir & 0xF); // AND NOT IR(3 DOWNTO 0)
       break;
     case 0x15: // SEI
+      if (debugMode) cout << pc << " " << "SEI" << endl;
       state = State::FETCH;
       iie |= (ir & 0xF); //OR IR(3 DOWNTO 0)
       break;
     case 0x16:
+      if (debugMode) cout << pc << " " << "state = State::EX_RETI;" << endl;
       state = State::EX_RETI;
       break;
     case 0x17:
+      if (debugMode) cout << pc << " " << "state = State::EX_LOADI;" << endl;
       state = State::EX_LOADI;
       break;
     default:
@@ -854,10 +881,10 @@ void SComp::decode() {
 void SComp::load() {
   ac = mdr;
   m_readFromCode = mdrIsCode;
-  // if (m_readFromCode) {
-  //   std::cerr << "Warning: read from code pc: " << pc << ", address: "
-  //     << (ir & address_mask) << ", value: " << ac << endl;
-  // }
+  if (debugMode && m_readFromCode) {
+    std::cerr << "Warning: read from code pc: " << pc << ", address: "
+      << (ir & address_mask) << ", value: " << ac << endl;
+  }
 
   state = State::FETCH;
 }
