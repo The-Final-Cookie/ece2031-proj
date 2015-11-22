@@ -7,7 +7,8 @@ namespace TFC {
 
 SComp::SComp(std::vector<int> const& memory)
   : memory(memory), state(State::RESET_PC), pc_stack(),
-    m_io_dist({{no_echo}}) {
+    m_io_dist({{no_echo, no_echo, no_echo, no_echo, no_echo, no_echo, no_echo,
+    no_echo}}) {
   std::array<int, std::mt19937::state_size> seed_data;
   std::random_device r;
   std::generate_n(seed_data.data(), seed_data.size(), std::ref(r));
@@ -438,62 +439,122 @@ void SComp::updatePos() {
   // and an algorithm could potentially find a "weak spot" in the simulation and
   // exploit it in a way that would be unrealistic
 
-  // Additionally, this is all very fudged.
+  // Additionally, this is all very fudged.  I don't try very hard to emulate
+  // the behavior of the conversion, I just sin/cos myself and round
 
   // Period for odometry update
   size_t clockPeriod = instruction_period / 100; // 100 Hz
+
+  if (executed_instructions % clockPeriod) {
+    return;
+  }
+
+  if (m_io_resetpos) {
+    m_io_lpos = 0;
+    m_io_rpos = 0;
+    m_io_xpos = 0;
+    m_io_ypos = 0;
+    m_io_theta = 0;
+
+    pos = {};
+    heading = 0;
+
+    // don't touch true_pos and true_heading
+  }
+
+  std::normal_distribution<double> randSpeed(0, speed_stdev);
+  auto getDisp = [&randSpeed, this](double vel) {
+      double mm_per_centisec = speed_slope * vel + speed_inter;
+      return max(mm_per_centisec + randSpeed(engine), 0.);
+    };
+
+  double leftWheelDisp = getDisp(true_lvel);
+  m_io_lpos += leftWheelDisp;
+
+  double rightWheelDisp = getDisp(true_rvel);
+  m_io_rpos += rightWheelDisp;
+
+  // update both
+  std::tie(pos, heading) = circleMotion(pos, heading, leftWheelDisp, rightWheelDisp);
+  std::tie(true_pos, true_heading) = circleMotion(true_pos, true_heading, leftWheelDisp, rightWheelDisp);
+
+  // fuzz the true_pos and true_heading
+  std::uniform_real_distribution<double> randPos(-pos_fuzz, pos_fuzz);
+  std::uniform_real_distribution<double> randHead(-heading_fuzz, heading_fuzz);
+  true_pos += randPos(engine);
+  true_heading += randHead(engine);
+
+  // Finally update the velocities
+  std::normal_distribution<double> randAccel(0, accel_fuzz);
+
+  if (true_rvel != m_io_rvelcmd) {
+    true_rvel = approach<double>(m_io_rvelcmd, true_rvel, max_accel + randAccel(engine));
+  }
+
+  if (true_lvel != m_io_lvelcmd) {
+    true_lvel = approach<double>(m_io_lvelcmd, true_lvel, max_accel + randAccel(engine));
+  }
+
   // Period for m_io_lvel and m_io_rvel update
   size_t clockPeriod10 = instruction_period / 10; // 10 Hz
+
+  // This isn't accurate, it's kind of... too accurate
+  if (executed_instructions % clockPeriod10 == 0) {
+    m_io_rvel = round(true_rvel);
+    m_io_lvel = round(true_lvel);
+  }
 }
 
 void SComp::updateSonar() {
   size_t clockPeriod = instruction_period / 25; // 25Hz
 
-  if (executed_instructions % clockPeriod == 0) {
-    // Clear disabled sonars first
-    for (int i = 0; i < 8; ++i) {
-      // If this sonar is disabled
-      if (!((1 << i) & m_io_sonaren)) {
-        // set it to no_echo
-        m_io_dist[i] = no_echo;
-      }
+  if (executed_instructions % clockPeriod) {
+    return;
+  }
+
+  // Clear disabled sonars first
+  for (int i = 0; i < 8; ++i) {
+    // If this sonar is disabled
+    if (!((1 << i) & m_io_sonaren)) {
+      // set it to no_echo
+      m_io_dist[i] = no_echo;
     }
+  }
 
-    for (int i = 1; i < 9; ++i) { // starting from the next sonar
-      int this_sonar = (last_sonar_used + i) % 8;
-      uint16_t bitmask = 1 << (this_sonar);
-      if (bitmask & m_io_sonaren) {
-        last_sonar_used = this_sonar;
-        auto position = Vec2D{true_xpos, true_ypos};
-        auto angle = true_heading + sonar_angles[this_sonar];
+  for (int i = 1; i < 9; ++i) { // starting from the next sonar
+    int this_sonar = (last_sonar_used + i) % 8;
+    uint16_t bitmask = 1 << (this_sonar);
+    if (bitmask & m_io_sonaren) {
+      last_sonar_used = this_sonar;
+      auto position = true_pos;
+      auto angle = true_heading + sonar_angles[this_sonar];
 
-        // because the sonars are located on the side of the robot
-        position += Vec2D::withAngle(angle, robot_size);
+      // because the sonars are located on the side of the robot
+      position += Vec2D::withAngle(angle, robot_size);
 
-        auto heading = Vec2D::withAngle(angle, sonar_range);
-        auto echo_path = Line2D{position, position + heading};
-        for (auto const& wall : arena) {
-          auto intersection = echo_path.intersection(wall);
-          if (intersection.intersects) {
-            std::normal_distribution<double> dist(0, sonar_fuzz);
-            auto range = intersection.t * sonar_range;
-            range += dist(engine);
-            m_io_dist[this_sonar] = round(range);
+      auto heading = Vec2D::withAngle(angle, sonar_range);
+      auto echo_path = Line2D{position, position + heading};
+      for (auto const& wall : arena) {
+        auto intersection = echo_path.intersection(wall);
+        if (intersection.intersects) {
+          std::normal_distribution<double> dist(0, sonar_fuzz);
+          auto range = intersection.t * sonar_range;
+          range += dist(engine);
+          m_io_dist[this_sonar] = round(range);
 
-            if (m_io_dist[this_sonar] < m_io_sonalarm_distance &&
-                bitmask & m_io_sonarint) {
-              m_io_sonalarm_flags = bitmask;
-              sendInterrupt(Interrupt::Sonar);
-            }
-
-            return;
+          if (m_io_dist[this_sonar] < m_io_sonalarm_distance &&
+              bitmask & m_io_sonarint) {
+            m_io_sonalarm_flags = bitmask;
+            sendInterrupt(Interrupt::Sonar);
           }
-        }
 
-        // if we didn't find a wall, then there's no echo.
-        m_io_dist[this_sonar] = no_echo;
-        return;
+          return;
+        }
       }
+
+      // if we didn't find a wall, then there's no echo.
+      m_io_dist[this_sonar] = no_echo;
+      return;
     }
   }
 }
@@ -516,6 +577,16 @@ void SComp::reset() {
   state = State::FETCH;
   in_hold = false;
   int_req_sync = 0;
+
+  m_io_xpos = 0;
+  m_io_ypos = 0;
+  m_io_theta = 0;
+  m_io_resetpos = 0;
+
+  pos = {};
+  heading = 0;
+  true_pos = {};
+  true_heading = 0;
 }
 
 void SComp::fetchAndHandleInt() {
@@ -792,6 +863,73 @@ void SComp::sendInterrupt(Interrupt i) {
   if ((iie & bitmask) && !(int_ack & bitmask)) {
     int_req |= bitmask;
   }
+}
+
+double SComp::radiusOfRotation(double leftWheelDisp, double rightWheelDisp) {
+  // This is a bit intricate.  We need to determine the center point of rotation
+  // based on the speed of both wheels.  For a rough idea of how the shape of
+  // this function:
+  // - If the numbers are the same then the answer is indeterminate, it could
+  //   be either negative or positive infinity.  This must be handled through a
+  //   special case.
+  // - If the values are the same magnitude but have opposite sign, then the value
+  //   of point is zero, representing a rotation about the position.
+  // - If one value is zero and the other is non-zero, then the point of rotation
+  //   is either one (if the right wheel is motionless) or negative one (if the
+  //   left wheel if motionless)
+
+  // special case indeterminate form, return filled infinity
+
+  if (leftWheelDisp == rightWheelDisp) {
+    return std::numeric_limits<double>::infinity();
+  }
+
+  // otherwise the sign depends on both the slower value and the overall sign of
+  // the system
+  // read != as xor.
+  bool isNeg = (leftWheelDisp < rightWheelDisp) != (leftWheelDisp + rightWheelDisp < 0);
+
+  // because the direction is determined all that matters is the magnitude of
+  // the larger vs the smaller value, so let's extract that
+  double larger = max(fabs(leftWheelDisp), fabs(rightWheelDisp));
+  double smaller = min(fabs(leftWheelDisp), fabs(rightWheelDisp));
+
+  // next let's find the magnitude of the point of rotation
+  // this formula comes from considering two concentric circles, we know that
+  // the ratio of the circumferences from the larger to smaller.  And we know
+  // the distance between the circles, so we can solve for the radius of the
+  // larger, then subtract 1 to find the radius at the position.
+  double point = axle_track / (1 - copysign(1, leftWheelDisp)*copysign(1, rightWheelDisp)*smaller/larger) - 1;
+
+  // and copy the sign
+  if (isNeg) {
+    point = -point;
+  }
+
+  return point;
+}
+  
+std::pair<Vec2D, double> SComp::circleMotion(Vec2D const& pos, double heading, double leftWheelDisp, double rightWheelDisp) {
+  double radius = radiusOfRotation(leftWheelDisp, rightWheelDisp);
+
+  // tdelta is 1/100 of a second
+  double radians = (leftWheelDisp + rightWheelDisp) / 2;
+
+  // special case to avoid division by zero, need to handle separately
+  if (radius == 0) {
+    return {pos, normalizeAngle(heading + rightWheelDisp / M_PI)};
+  }
+
+  double angle = normalizeAngle(pos.angle() + M_PI/2);
+  double traversedAngle = -radians / radius;
+  
+  double newAngle = angle + traversedAngle;
+  Vec2D positionDelta = Vec2D{cos(newAngle) - cos(angle), sin(newAngle) - sin(angle)} * radius;
+
+  Vec2D position = pos + positionDelta;
+  heading = normalizeAngle(newAngle - M_PI/2);
+
+  return {position, heading};
 }
 
 }

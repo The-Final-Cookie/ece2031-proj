@@ -26,6 +26,27 @@ T clamp(T const val, T const min, T const max) {
     return std::min(std::max(val, min), max);
 }
 
+template<typename T>
+T approach(T goal, T current, T rate) {
+  if (goal < current) {
+    return max(current - rate, goal);
+  } else if (goal > current) {
+    return min(current + rate, goal);
+  } else {
+    return current;
+  }
+}
+
+template <typename T>
+T normalizeAngle(T in) {
+  T out = fmod(in, 2*M_PI);
+  if (out > M_PI) {
+    out = out - 2*M_PI;
+  }
+
+  return out;
+}
+
 }
 
 #endif

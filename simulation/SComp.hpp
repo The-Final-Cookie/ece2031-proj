@@ -145,9 +145,15 @@ private:
 
   void sendInterrupt(Interrupt);
 
+  // accepts a normalized vector to represent current position and heading and
+  // then how far to turn in radians and how far away the radius is
+  std::pair<Vec2D, double> circleMotion(Vec2D const& pos, double heading, double leftWheelDisp, double rightWheelDisp);
+  // determines the radius to use from circle motion
+  double radiusOfRotation(double lvel, double rvel);
+
   static constexpr uint16_t address_mask = 0x7FF;
   static constexpr size_t instruction_period = 12500000; // Clock runs at 12.5 MHz
-  
+
   // Angles are assumed to have a common centerpoint for simplicity.  This is
   // not true.
   static constexpr const std::array<double, 8> sonar_angles =
@@ -181,22 +187,24 @@ private:
     }};
 
   // This is used to simulate positional drift
-  // uncertainty at 4% higher values are more evil
+  // uncertainty at 0.04% every 1/100 sec higher values are more evil
   // This isn't strictly realistic, as positional drift tends to be correlated with speed
   // and heading drift tends to periodicity with speed when moving forward and
   // tends to be correlated with angular momentum when staying still, but this
   // is a decent approximation.
 
-  static constexpr const double pos_fuzz = 0.04;
-  static constexpr const double heading_fuzz = 0.04;
+  static constexpr const double pos_fuzz = 0.0004; // rectal figure
+  static constexpr const double heading_fuzz = 0.0004; // rectal figure
 
-  // These constants are MAGIC.  Thanks Kevin!  Units are mm/(sec speedUnit)
+  // These constants are MAGIC.  Thanks Kevin!  Units are
+  // mm/(centisec*speedUnit) (speedUnit in this case means 0-511 unit used to
+  // control the DE2Bot via lvelcmd and rvelcmd)
   // More testing may get better data for this.  I expect the fit to not be
   // strictly linear due to the strange, non-linear nature of rotational
   // friction in a DC motor.
-  static constexpr const double speed_slope = 1.20706637595084;
-  static constexpr const double speed_inter = -55.7557985989281;
-  
+  static constexpr const double speed_slope = 0.0120706637595084;
+  static constexpr const double speed_inter = -0.557557985989281;
+
   // "The acceleration (including deceleration) of each wheel is controlled to
   // 512units/s.  An important side effect of this is that overshoot can be
   // calculated and accounted for.  In general, the distance required to change
@@ -207,10 +215,16 @@ private:
   // velocities Vel_turn, overshoot (in degrees) can be estimated as Vel_turn^2
   // / 2030."
 
-  static constexpr const double max_accel = 0;
+  // Units are in mm/(sec*centisec), this is directly the approach rate every
+  // time odometry updates, both the acceleration and the speed are fuzzed
+  static constexpr const double max_accel = 5.376;
+  static constexpr const double accel_fuzz = max_accel * 0.04; // rectal figure
 
   // The standard deviation ranges from about 1.5 to a bit over 2 depending on
-  // speed, setting to 2 for safety
+  // speed, setting to 2 for safety, this is directly applied to the speed (!)
+  // because the percentage uncertainty doesn't seem to be constant, instead
+  // there seems to be even more uncertainty in speed at lower speeds in
+  // absolute terms
   static constexpr const double speed_stdev = 2.0;
 
   std::mt19937_64 engine;
@@ -281,8 +295,12 @@ private:
   // Used to track the sonars
   uint8_t last_sonar_used;
 
-  double true_xpos;
-  double true_ypos;
+  // A high precision version of what the bot thinks its position and heading is
+  Vec2D pos;
+  double heading;
+
+  // And what it actually is
+  Vec2D true_pos;
   double true_heading;
 
   double true_lvel;
