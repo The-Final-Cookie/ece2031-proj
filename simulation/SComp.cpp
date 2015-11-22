@@ -484,6 +484,11 @@ void SComp::updatePos() {
   true_pos += randPos(engine);
   true_heading += randHead(engine);
 
+  // Send the data out to the stuff
+  m_io_xpos = round(pos.x() / ticks_per_mm);
+  m_io_ypos = round(pos.y() / ticks_per_mm);
+  m_io_theta = round(heading * 180/M_PI);
+
   // Finally update the velocities
   std::normal_distribution<double> randAccel(0, accel_fuzz);
 

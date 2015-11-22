@@ -162,6 +162,8 @@ private:
 
   static constexpr const uint16_t no_echo = 0x7FFF;
 
+  // As much as possible, all distances are specified in mms
+
   // Sonar distance is tracked in mms and can sense up to 5m away
   static constexpr const uint16_t sonar_range = 5000;
   // but not less than 15cm
@@ -185,6 +187,8 @@ private:
       Line2D{Vec2D(-1524, -1828.8), Vec2D(-304.8, -1828.8)}, // Bottom left
       Line2D{Vec2D(304.8, -1828.8), Vec2D(1524, -1828.8)},   // Bottom right
     }};
+
+  static constexpr const double ticks_per_mm = 1.05;
 
   // This is used to simulate positional drift
   // uncertainty at 0.04% every 1/100 sec higher values are more evil
