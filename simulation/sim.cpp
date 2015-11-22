@@ -22,9 +22,10 @@ int main(int argc, char** argv) {
 
   MifParse parser(argv[1]);
   std::vector<int> mifData = parser.parseMif();
+  std::vector<bool> isCode = parser.codeSegments();
   int bitwidth = parser.getWidth();
 
-  SComp scomp(mifData);
+  SComp scomp(mifData, isCode);
   scomp.stepInstruction();
   auto omg = scomp.getMemory();
   

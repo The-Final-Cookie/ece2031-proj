@@ -15,10 +15,12 @@ namespace TFC {
 
 class SComp {
 public:
-  SComp(std::vector<int> const& memory);
+  SComp(std::vector<int> const& memory, std::vector<bool> const& isCode);
   void stepInstruction(size_t count = 1);
 
   std::vector<int> getMemory() const;
+  bool wroteToCode() const;
+  bool readFromCode() const;
 
   void setSwitches(uint16_t bitmask);
   uint16_t getRedLeds() const;
@@ -189,8 +191,8 @@ private:
 
   // Angles are assumed to have a common centerpoint for simplicity.  This is
   // not true.
-  static constexpr const std::array<double, 8> sonar_angles
-    {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
+  static constexpr const std::array<double, 8> sonar_angles {{
+    M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
     -M_PI*4./5., M_PI*4./5.}};
 
   static constexpr const uint16_t no_echo = 0x7FFF;
@@ -269,6 +271,11 @@ private:
   uint64_t executed_instructions;
 
   std::vector<int> memory;
+  std::vector<bool> isCode;
+  bool m_wroteToCode;
+  bool m_readFromCode;
+  bool mdrIsCode;
+
   uint8_t io_addr;
   uint16_t io_data;
   bool io_write;

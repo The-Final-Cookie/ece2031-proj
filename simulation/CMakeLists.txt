@@ -219,11 +219,14 @@ ELSEIF (WIN32)
 ENDIF ()
 
 IF (APPLE)
-  SET (BASE_LIBS)
+  SET (BASE_LIBS
+      ncurses
+    )
 ELSEIF (LINUX)
   SET (BASE_LIBS
       pthread
       dl
+      ncurses
     )
 ELSEIF (WIN32)
   SET (BASE_LIBS
@@ -232,6 +235,7 @@ ELSEIF (WIN32)
       iphlpapi
       shlwapi
       dbghelp
+      ncurses
     )
 ENDIF ()
 

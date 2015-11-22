@@ -8,8 +8,8 @@ namespace TFC {
 constexpr const std::array<double, 8> SComp::sonar_angles;
 constexpr const std::array<Line2D, 6> SComp::arena;
 
-SComp::SComp(std::vector<int> const& memory)
-  : memory(memory), state(State::RESET_PC), pc_stack(),
+SComp::SComp(std::vector<int> const& memory, std::vector<bool> const& isCode)
+  : memory(memory), isCode(isCode), state(State::RESET_PC), pc_stack(),
     m_io_dist({{no_echo, no_echo, no_echo, no_echo, no_echo, no_echo, no_echo,
     no_echo}}) {
   std::array<int, std::mt19937::state_size> seed_data;
@@ -34,6 +34,14 @@ void SComp::stepInstruction(size_t count) {
 
 std::vector<int> SComp::getMemory() const {
   return memory;
+}
+
+bool SComp::wroteToCode() const {
+  return m_wroteToCode;
+}
+
+bool SComp::readFromCode() const {
+  return m_readFromCode;
 }
   
 void SComp::setSwitches(uint16_t bitmask) {
@@ -161,8 +169,10 @@ void SComp::runState() {
 
   if (mw) {
     memory[mem_addr] = ac;
+    m_wroteToCode = isCode[mem_addr];
   } else {
     mdr = memory[mem_addr];
+    mdrIsCode = isCode[mem_addr];
   }
 
   io_addr = ir & 0xFF;
@@ -833,6 +843,8 @@ void SComp::decode() {
 
 void SComp::load() {
   ac = mdr;
+  m_readFromCode = mdrIsCode;
+
   state = State::FETCH;
 }
 
