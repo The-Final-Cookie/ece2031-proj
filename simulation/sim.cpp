@@ -27,7 +27,11 @@ int main(int argc, char** argv) {
 
   SComp scomp(mifData, isCode);
   do {
-    scomp.stepInstruction(1000);
+    scomp.stepInstruction();
+    if (scomp.getPC() >= 90)
+      scomp.setDebug(true);
+    else
+      scomp.setDebug(false);
   } while(!scomp.getXLeds());
 
   auto omg = scomp.getMemory();

@@ -178,10 +178,14 @@ void SComp::runState() {
   mem_addr = (state == State::FETCH) ? pc : ir & address_mask;
 
   if (mw) {
+    if (debugMode) {
+      cout << "Storing " << ac << " to address: " << mem_addr
+        << ", previous value: " << memory[mem_addr] << endl;
+    }
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];
     if (debugMode && m_wroteToCode) {
-      std::cerr << "Warning: write to code pc: " << pc << ", address: "
+      std::cout << "Warning: write to code pc: " << pc << ", address: "
         << mem_addr << ", value: " << ac << endl;
     }
   } else {
@@ -879,10 +883,13 @@ void SComp::decode() {
 }
 
 void SComp::load() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << mdr << endl;
+  }
   ac = mdr;
   m_readFromCode = mdrIsCode;
   if (debugMode && m_readFromCode) {
-    std::cerr << "Warning: read from code pc: " << pc << ", address: "
+    std::cout << "Warning: read from code pc: " << pc << ", address: "
       << (ir & address_mask) << ", value: " << ac << endl;
   }
 
@@ -900,23 +907,40 @@ void SComp::store2() {
 }
 
 void SComp::add() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << ac + mdr << endl;
+  }
+
   ac += mdr;
   state = State::FETCH;
 }
 
 void SComp::sub() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << ac - mdr << endl;
+  }
   ac -= mdr;
   state = State::FETCH;
 }
 
 void SComp::jump() {
+  if (debugMode) {
+    cout << "pc was: " << pc << ", becomes: " << (ir & address_mask) << endl;
+  }
+
   pc = ir & address_mask;
   state = State::FETCH;
 }
 
 void SComp::jneg() {
   if (ac & 0x8000) {
+    if (debugMode) {
+      cout << "jump taken, ac is " << ac << " pc was: " << pc << ", becomes: " << (ir & address_mask) << endl;
+    }
+
     pc = ir & address_mask;
+  } else if (debugMode) {
+    cout << "jump not taken, ac is " << ac << endl;
   }
 
   state = State::FETCH;
@@ -924,7 +948,13 @@ void SComp::jneg() {
 
 void SComp::jpos() {
   if (!(ac & 0x8000)) {
+    if (debugMode) {
+      cout << "jump taken, ac is " << ac << " pc was: " << pc << ", becomes: " << (ir & address_mask) << endl;
+    }
+
     pc = ir & address_mask;
+  } else if (debugMode) {
+    cout << "jump not taken, ac is " << ac << endl;
   }
 
   state = State::FETCH;
@@ -932,28 +962,48 @@ void SComp::jpos() {
 
 void SComp::jzero() {
   if (ac == 0) {
+    if (debugMode) {
+      cout << "jump taken, ac is " << ac << " pc was: " << pc << ", becomes: " << (ir & address_mask) << endl;
+    }
+
     pc = ir & address_mask;
+  } else if (debugMode) {
+    cout << "jump not taken, ac is " << ac << endl;
   }
 
   state = State::FETCH;
 }
 
 void SComp::and_() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << (ac & mdr) << endl;
+  }
+
   ac &= mdr;
   state = State::FETCH;
 }
 
 void SComp::or_() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << (ac | mdr) << endl;
+  }
   ac |= mdr;
   state = State::FETCH;
 }
 
 void SComp::xor_() {
+  if (debugMode) {
+    cout << "ac was: " << ac << ", becomes: " << (ac ^ mdr) << endl;
+  }
   ac ^= mdr;
   state = State::FETCH;
 }
 
 void SComp::shift() {
+  if (debugMode) {
+    cout << "ac was: " << ac << " shifted by " << mdr;
+  }
+
   // mdr is sign-magnitude 5 bit... because.
   if (mdr & 0x10) { // negative shift -> right shift
     ac >>= (mdr & 0xF);
@@ -961,19 +1011,42 @@ void SComp::shift() {
     ac <<= (mdr & 0xF);
   }
   
+  if (debugMode) {
+    cout << ", becomes: " << ac << endl;
+  }
+
   state = State::FETCH;
 }
 
 void SComp::addi() {
+  if (debugMode) {
+    cout << "ac was: " << ac;
+  }
+
   if (ir & 0x400) { // sign bit
     ac += ir | ~address_mask;
+    if (debugMode) {
+      cout << "adding: " << (ir | ~address_mask);
+    }
   } else {
     ac += ir & address_mask;
+    if (debugMode) {
+      cout << "adding: " << (ir & address_mask);
+    }
   }
+  
+  if (debugMode) {
+    cout << ", becomes: " << ac << endl;
+  }
+
   state = State::FETCH;
 }
 
 void SComp::iload() {
+  if (debugMode) {
+    cout << "loading indirectly: " << (mdr & address_mask) << endl;
+  }
+
   ir &= ~address_mask;
   ir |= (mdr & address_mask);
 
@@ -981,6 +1054,10 @@ void SComp::iload() {
 }
 
 void SComp::istore() {
+  if (debugMode) {
+    cout << "storing indirectly: " << (mdr & address_mask) << endl;
+  }
+
   ir &= ~address_mask;
   ir |= (mdr & address_mask);
 
@@ -988,6 +1065,15 @@ void SComp::istore() {
 }
 
 void SComp::call() {
+  if (debugMode) {
+    cout << "calling: " << (ir & address_mask) << " from: " << pc
+      << "current callstack: (";
+
+    for (size_t i = 0; i > pc_stack.size(); ++i) {
+      cout << pc_stack[i] << ", ";
+    }
+    cout << ")" << endl;
+  }
   for (size_t i = pc_stack.size()-1; i > 0; --i) {
     pc_stack[i] = pc_stack[i-1];
   }
@@ -998,6 +1084,15 @@ void SComp::call() {
 }
 
 void SComp::return_() {
+  if (debugMode) {
+    cout << "returning to: " << pc_stack[0] << " from: " << pc
+      << "current callstack: (";
+
+    for (size_t i = 0; i > pc_stack.size(); ++i) {
+      cout << pc_stack[i] << ", ";
+    }
+    cout << ")" << endl;
+  }
   pc = pc_stack[0];
   for (size_t i = 0; i < pc_stack.size()-1; ++i) {
     pc_stack[i] = pc_stack[i+1];
@@ -1011,6 +1106,10 @@ void SComp::in() {
     in_hold = false;
     state = State::FETCH;
   } else {
+    if (debugMode) {
+      cout << "Reading from IO, setting ac to: " << io_data << "from " << ac << endl;
+    }
+
     ac = io_data;
     in_hold = true;
   }
@@ -1025,15 +1124,34 @@ void SComp::out2() {
 }
 
 void SComp::loadi() {
+  if (debugMode) {
+    cout << "ac was: " << ac;
+  }
+
   if (ir & 0x400) { // sign bit
     ac = ir | ~address_mask;
+    if (debugMode) {
+      cout << "loading: " << (ir | ~address_mask);
+    }
   } else {
     ac = ir & address_mask;
+    if (debugMode) {
+      cout << "loading: " << (ir & address_mask);
+    }
   }
+  
+  if (debugMode) {
+    cout << ", becomes: " << ac << endl;
+  }
+
   state = State::FETCH;
 }
 
 void SComp::reti() {
+  if (debugMode) {
+    cout << "Returning from interrupt to " << pc_saved << endl;
+  }
+
   gie = true;
   pc = pc_saved;
   ac = ac_saved;
@@ -1041,6 +1159,10 @@ void SComp::reti() {
 }
 
 void SComp::sendInterrupt(Interrupt i) {
+  if (debugMode) {
+    cout << "Requesting interrupt! " << (int) i << endl;
+  }
+
   int bitmask = 1 << (int)i;
   if ((iie & bitmask) && !(int_ack & bitmask)) {
     int_req |= bitmask;
