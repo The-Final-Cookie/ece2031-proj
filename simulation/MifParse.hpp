@@ -18,6 +18,12 @@ public:
   std::vector<int> parseMif();
   size_t getWidth() const;
 
+  // Same length as parseMif return, marks each word as coming from ASM commands
+  // or DW commands.  If DW, false (data), otherwise true (code).  This is used
+  // in diagnostics to make sure that code isn't read from and code isn't
+  // written to.
+  std::vector<bool> codeSegments() const;
+
 private:
   enum class DataRadix {
     Invalid = -1,
@@ -31,12 +37,15 @@ private:
 
   void readMultilineComment();
   void readSinglelineComment();
+  void readSinglelineCommentWithData(size_t offsetStart, size_t offsetEnd);
   void readSpaces();
+  void readSpacesWithData(size_t offsetStart, size_t offsetEnd);
   string readWord();
   int readInt(DataRadix radix);
   DataRadix readRadix();
 
   void consumeString(string const& toConsume);
+  bool tryConsumeString(string const& toConsume);
 
   bool consumeAddressEntry();
 
@@ -49,6 +58,7 @@ private:
   DataRadix dataRadix;
 
   std::vector<int> result;
+  std::vector<bool> isCode;
 };
 
 }

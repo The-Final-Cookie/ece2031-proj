@@ -5,6 +5,9 @@
 
 namespace TFC {
 
+constexpr const std::array<double, 8> SComp::sonar_angles;
+constexpr const std::array<Line2D, 6> SComp::arena;
+
 SComp::SComp(std::vector<int> const& memory)
   : memory(memory), state(State::RESET_PC), pc_stack(),
     m_io_dist({{no_echo, no_echo, no_echo, no_echo, no_echo, no_echo, no_echo,

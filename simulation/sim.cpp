@@ -35,8 +35,8 @@ int main(int argc, char** argv) {
   cout << std::endl;
   cout << std::endl;
 
-  for (auto entry : omg) {
-    cout << std::setfill('0') << std::setw(std::ceil(bitwidth / 4)) << std::hex << entry;
+  for (auto entry : parser.codeSegments()) {
+    cout << entry;
   }
 
   cout << std::endl;

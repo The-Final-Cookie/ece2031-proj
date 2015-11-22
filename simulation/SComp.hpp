@@ -189,7 +189,7 @@ private:
 
   // Angles are assumed to have a common centerpoint for simplicity.  This is
   // not true.
-  static constexpr const std::array<double, 8> sonar_angles =
+  static constexpr const std::array<double, 8> sonar_angles
     {{M_PI/2., M_PI*11./45., M_PI/15., -M_PI/15., -M_PI*11./45., -M_PI/2.,
     -M_PI*4./5., M_PI*4./5.}};
 
@@ -212,7 +212,7 @@ private:
   static constexpr const double robot_size = axle_track + 50;
 
   // Arena
-  static constexpr const std::array<Line2D, 6> arena = {{
+  static constexpr const std::array<Line2D, 6> arena {{
       Line2D{Vec2D(-1524, 1828.8), Vec2D(-304.8, 1828.8)},   // Top left
       Line2D{Vec2D(304.8, 1828.8), Vec2D(1524, 1828.8)},     // Top right
       Line2D{Vec2D(-1524, -1828.8), Vec2D(-1524, 1828.8)},   // Left
