@@ -176,6 +176,10 @@ void SComp::runState() {
   if (mw) {
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];
+    // if (m_wroteToCode) {
+    //   std::cerr << "Warning: write to code pc: " << pc << ", address: "
+    //     << mem_addr << ", value: " << ac << endl;
+    // }
   } else {
     mdr = memory[mem_addr];
     mdrIsCode = isCode[mem_addr];
@@ -850,6 +854,10 @@ void SComp::decode() {
 void SComp::load() {
   ac = mdr;
   m_readFromCode = mdrIsCode;
+  // if (m_readFromCode) {
+  //   std::cerr << "Warning: read from code pc: " << pc << ", address: "
+  //     << (ir & address_mask) << ", value: " << ac << endl;
+  // }
 
   state = State::FETCH;
 }
@@ -920,7 +928,7 @@ void SComp::xor_() {
 
 void SComp::shift() {
   // mdr is sign-magnitude 5 bit... because.
-  if (mdr &= 0x10) { // negative shift -> right shift
+  if (mdr & 0x10) { // negative shift -> right shift
     ac >>= mdr & 0xF;
   } else {
     ac <<= mdr & 0xF;
