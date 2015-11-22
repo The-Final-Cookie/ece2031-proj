@@ -933,7 +933,7 @@ void SComp::addi() {
   if (ir & 0x400) { // sign bit
     ac += ir | ~address_mask;
   } else {
-    ac += ir;
+    ac += ir & address_mask;
   }
   state = State::FETCH;
 }
