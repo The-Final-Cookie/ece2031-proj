@@ -17,6 +17,7 @@ class SComp {
 public:
   SComp(std::vector<int> const& memory, std::vector<bool> const& isCode);
   void stepInstruction(size_t count = 1);
+  uint16_t getPC() const;
 
   std::vector<int> getMemory() const;
   bool wroteToCode() const;

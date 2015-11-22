@@ -26,21 +26,22 @@ int main(int argc, char** argv) {
   int bitwidth = parser.getWidth();
 
   SComp scomp(mifData, isCode);
-  scomp.stepInstruction();
-  auto omg = scomp.getMemory();
+  do {
+    scomp.stepInstruction();
+    cout << scomp.getRedLeds() << endl;
+  } while(!scomp.getXLeds());
+    auto omg = scomp.getMemory();
   
   for (auto entry : mifData) {
     cout << std::setfill('0') << std::setw(std::ceil(bitwidth / 4)) << std::hex << entry;
   }
-  
-  cout << std::endl;
-  cout << std::endl;
 
-  for (auto entry : parser.codeSegments()) {
-    cout << entry;
+  cout << endl;
+  cout << endl;
+
+  for (auto entry : omg) {
+    cout << std::setfill('0') << std::setw(std::ceil(bitwidth / 4)) << std::hex << entry;
   }
-
-  cout << std::endl;
-
+  
   return 0;
 }

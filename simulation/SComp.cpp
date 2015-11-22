@@ -32,6 +32,10 @@ void SComp::stepInstruction(size_t count) {
   }
 }
 
+uint16_t SComp::getPC() const {
+  return pc;
+}
+
 std::vector<int> SComp::getMemory() const {
   return memory;
 }
@@ -167,6 +171,8 @@ double SComp::getTrueRVel() const {
 void SComp::runState() {
   ++executed_instructions;
 
+  mem_addr = (state == State::FETCH) ? pc : ir & address_mask;
+
   if (mw) {
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];
@@ -179,7 +185,6 @@ void SComp::runState() {
 
   updateIO();
 
-  mem_addr = (state == State::FETCH) ? pc : ir & address_mask;
   io_cycle = (state == State::EX_IN ||
               state == State::EX_OUT2);
 
@@ -295,7 +300,8 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Leds:
-        m_io_redLeds = io_data;
+        cout << "here " << ac << endl;
+        m_io_redLeds = ac;
         break;
       case IOAddr::Timer:
         m_io_timer = 0;
@@ -304,22 +310,22 @@ void SComp::doIoWrite() {
         // Do Nothing
         break;
       case IOAddr::Sseg1:
-        m_io_sevenSeg1 = io_data;
+        m_io_sevenSeg1 = ac;
         break;
       case IOAddr::Sseg2:
-        m_io_sevenSeg2 = io_data;
+        m_io_sevenSeg2 = ac;
         break;
       case IOAddr::Lcd:
-        m_io_lcd = io_data;
+        m_io_lcd = ac;
         break;
       case IOAddr::Xleds:
-        m_io_xleds = io_data;
+        m_io_xleds = ac;
         break;
       case IOAddr::Beep:
-        m_io_beep = io_data;
+        m_io_beep = ac;
         break;
       case IOAddr::Ctimer:
-        m_io_ctimer = io_data;
+        m_io_ctimer = ac;
         break;
       case IOAddr::Lpos:
         // Do nothing
@@ -328,7 +334,7 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Lvelcmd:
-        m_io_lvelcmd = io_data;
+        m_io_lvelcmd = ac;
         break;
       case IOAddr::Rpos:
         // Do nothing
@@ -337,19 +343,19 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Rvelcmd:
-        m_io_rvelcmd = io_data;
+        m_io_rvelcmd = ac;
         break;
       case IOAddr::I2c_cmd:
-        m_io_i2c_cmd = io_data;
+        m_io_i2c_cmd = ac;
         break;
       case IOAddr::I2c_data:
-        m_io_i2c_data = io_data;
+        m_io_i2c_data = ac;
         break;
       case IOAddr::I2c_rdy:
-        m_io_i2c_rdy = io_data;
+        m_io_i2c_rdy = ac;
         break;
       case IOAddr::Uart_dat:
-        m_io_uart_dat = io_data;
+        m_io_uart_dat = ac;
         break;
       case IOAddr::Uart_rdy:
         // Do nothing
@@ -383,13 +389,13 @@ void SComp::doIoWrite() {
         // Do nothing
         break;
       case IOAddr::Sonalarm:
-        m_io_sonalarm_distance = io_data;
+        m_io_sonalarm_distance = ac;
         break;
       case IOAddr::Sonarint:
-        m_io_sonarint = io_data;
+        m_io_sonarint = ac;
         break;
       case IOAddr::Sonaren:
-        m_io_sonaren = io_data;
+        m_io_sonaren = ac;
         break;
       case IOAddr::Xpos:
         // Do Nothing
@@ -947,11 +953,12 @@ void SComp::istore() {
 }
 
 void SComp::call() {
-  for (size_t i = pc_stack.size()-2; i > 0; --i) {
-    pc_stack[i+1] = pc_stack[i];
+  for (size_t i = pc_stack.size()-1; i > 0; --i) {
+    pc_stack[i] = pc_stack[i-1];
   }
   pc_stack[0] = pc;
   pc = ir & address_mask;
+  
   state = State::FETCH;
 }
 
@@ -986,7 +993,7 @@ void SComp::loadi() {
   if (ir & 0x400) { // sign bit
     ac = ir | ~address_mask;
   } else {
-    ac = ir;
+    ac = ir & address_mask;
   }
   state = State::FETCH;
 }
