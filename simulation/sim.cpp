@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
   SComp scomp(mifData, isCode);
   do {
     scomp.stepInstruction();
-    if (scomp.getPC() >= 90)
+    if (scomp.getPC() < 89)
       scomp.setDebug(true);
     else
       scomp.setDebug(false);

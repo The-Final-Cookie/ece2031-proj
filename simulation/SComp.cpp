@@ -908,7 +908,7 @@ void SComp::store2() {
 
 void SComp::add() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << ac + mdr << endl;
+    cout << "ac was: " << ac << ", becomes: " << (uint16_t)(ac + mdr) << endl;
   }
 
   ac += mdr;
@@ -917,7 +917,7 @@ void SComp::add() {
 
 void SComp::sub() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << ac - mdr << endl;
+    cout << "ac was: " << ac << ", becomes: " << (uint16_t)(ac - mdr) << endl;
   }
   ac -= mdr;
   state = State::FETCH;
@@ -1001,14 +1001,15 @@ void SComp::xor_() {
 
 void SComp::shift() {
   if (debugMode) {
-    cout << "ac was: " << ac << " shifted by " << mdr;
+    cout << " ac was: " << ac << " shifted " << ((ir & 0x10) ? "right" : "left")
+      << " by " << (ir & 0xF);
   }
 
-  // mdr is sign-magnitude 5 bit... because.
-  if (mdr & 0x10) { // negative shift -> right shift
-    ac >>= (mdr & 0xF);
+  // ir is sign-magnitude 5 bit... because.
+  if (ir & 0x10) { // negative shift -> right shift
+    ac = (ac >> (ir & 0xF)) | (ac & 0x8000); // arithmetic shift
   } else {
-    ac <<= (mdr & 0xF);
+    ac <<= (ir & 0xF);
   }
   
   if (debugMode) {
@@ -1026,7 +1027,7 @@ void SComp::addi() {
   if (ir & 0x400) { // sign bit
     ac += ir | ~address_mask;
     if (debugMode) {
-      cout << "adding: " << (ir | ~address_mask);
+      cout << " adding: " << (ir | ~address_mask);
     }
   } else {
     ac += ir & address_mask;
@@ -1067,7 +1068,7 @@ void SComp::istore() {
 void SComp::call() {
   if (debugMode) {
     cout << "calling: " << (ir & address_mask) << " from: " << pc
-      << "current callstack: (";
+      << " current callstack: (";
 
     for (size_t i = 0; i > pc_stack.size(); ++i) {
       cout << pc_stack[i] << ", ";
@@ -1086,7 +1087,7 @@ void SComp::call() {
 void SComp::return_() {
   if (debugMode) {
     cout << "returning to: " << pc_stack[0] << " from: " << pc
-      << "current callstack: (";
+      << " current callstack: (";
 
     for (size_t i = 0; i > pc_stack.size(); ++i) {
       cout << pc_stack[i] << ", ";
@@ -1131,12 +1132,12 @@ void SComp::loadi() {
   if (ir & 0x400) { // sign bit
     ac = ir | ~address_mask;
     if (debugMode) {
-      cout << "loading: " << (ir | ~address_mask);
+      cout << " loading: " << (ir | ~address_mask);
     }
   } else {
     ac = ir & address_mask;
     if (debugMode) {
-      cout << "loading: " << (ir & address_mask);
+      cout << " loading: " << (ir & address_mask);
     }
   }
   
