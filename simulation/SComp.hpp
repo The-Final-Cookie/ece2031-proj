@@ -215,12 +215,12 @@ private:
 
   // Arena
   static constexpr const std::array<Line2D, 6> arena {{
-      Line2D{Vec2D(-1524, 1828.8), Vec2D(-304.8, 1828.8)},   // Top left
-      Line2D{Vec2D(304.8, 1828.8), Vec2D(1524, 1828.8)},     // Top right
-      Line2D{Vec2D(-1524, -1828.8), Vec2D(-1524, 1828.8)},   // Left
-      Line2D{Vec2D(1524, -1828.8), Vec2D(1524, 1828.8)},     // Right
-      Line2D{Vec2D(-1524, -1828.8), Vec2D(-304.8, -1828.8)}, // Bottom left
-      Line2D{Vec2D(304.8, -1828.8), Vec2D(1524, -1828.8)},   // Bottom right
+      Line2D{Vec2D(1828.8, -1524.0), Vec2D(1828.8, -304.8)},     // Top left
+      Line2D{Vec2D(1828.8, 304.8), Vec2D(1828.8, 1524.0)},       // Top right
+      Line2D{Vec2D(-1828.8, -1524.0), Vec2D(1828.8, -1524.0)},   // Left
+      Line2D{Vec2D(-1828.8, 1524.0), Vec2D(1828.8, 1524.0)},     // Right
+      Line2D{Vec2D(-1828.8, -1524.0), Vec2D(-1828.8, -304.8)},   // Bottom left
+      Line2D{Vec2D(-1828.8, 304.8), Vec2D(-1828.8, 1524.0)},     // Bottom right
     }};
 
   static constexpr const double ticks_per_mm = 1.05;

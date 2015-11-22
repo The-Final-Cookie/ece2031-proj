@@ -566,7 +566,7 @@ void SComp::updateTimers() {
     ++m_io_ctimer;
   }
 }
-  
+
 void SComp::updatePos() {
   // Does not simulate gear lash because I cannot do it in an intelligent way
   // and an algorithm could potentially find a "weak spot" in the simulation and
