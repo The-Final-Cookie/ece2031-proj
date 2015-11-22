@@ -32,6 +32,126 @@ void SComp::stepInstruction(size_t count) {
 std::vector<int> SComp::getMemory() const {
   return memory;
 }
+  
+void SComp::setSwitches(uint16_t bitmask) {
+  m_io_switches = bitmask;
+}
+
+uint16_t SComp::getRedLeds() const {
+  return m_io_redLeds;
+}
+
+uint16_t SComp::getTimer() const {
+  return m_io_timer;
+}
+
+uint16_t SComp::getXIO() const {
+  return m_io_xio;
+}
+
+uint16_t SComp::getSevenSeg1() const {
+  return m_io_sevenSeg1;
+}
+
+uint16_t SComp::getSevenSeg2() const {
+  return m_io_sevenSeg2;
+}
+
+uint16_t SComp::getLCD() const {
+  return m_io_lcd;
+}
+
+uint16_t SComp::getXLeds() const {
+  return m_io_xleds;
+}
+
+uint16_t SComp::getBeep() const {
+  return m_io_beep;
+}
+
+uint16_t SComp::getCTimer() const {
+  return m_io_ctimer;
+}
+
+uint16_t SComp::getUARTData() const {
+  return m_io_uart_dat;
+}
+
+uint16_t SComp::getUARTRdy() const {
+  return m_io_uart_rdy;
+}
+
+std::array<uint16_t, 8> SComp::getSonarDist() const {
+  return m_io_dist;
+}
+
+uint16_t SComp::getSonalarmDist() const {
+  return m_io_sonalarm_distance;
+}
+
+uint16_t SComp::getSonalarmFlags() const {
+  return m_io_sonalarm_flags;
+}
+
+uint16_t SComp::getSonarInt() const {
+  return m_io_sonarint;
+}
+
+uint16_t SComp::getSonarEn() const {
+  return m_io_sonaren;
+}
+
+uint16_t SComp::getOdometryLPos() const {
+  return m_io_lpos;
+}
+
+uint16_t SComp::getOdometryLVel() const {
+  return m_io_lvel;
+}
+
+uint16_t SComp::getLVelCmd() const {
+  return m_io_lvelcmd;
+}
+
+uint16_t SComp::getOdometryRPos() const {
+  return m_io_rpos;
+}
+
+uint16_t SComp::getOdometryRVel() const {
+  return m_io_rvel;
+}
+
+uint16_t SComp::getRVelCmd() const {
+  return m_io_rvelcmd;
+}
+
+uint16_t SComp::getOdometryXPos() const {
+  return m_io_xpos;
+}
+
+uint16_t SComp::getOdometryYPos() const {
+  return m_io_ypos;
+}
+
+uint16_t SComp::getOdometryTheta() const {
+  return m_io_theta;
+}
+
+Vec2D SComp::getTruePos() const {
+  return true_pos;
+}
+
+double SComp::getTrueHeading() const {
+  return true_heading;
+}
+
+double SComp::getTrueLVel() const {
+  return true_lvel;
+}
+
+double SComp::getTrueRVel() const {
+  return true_rvel;
+}
 
 void SComp::runState() {
   ++executed_instructions;

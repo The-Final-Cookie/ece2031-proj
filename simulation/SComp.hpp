@@ -20,7 +20,40 @@ public:
 
   std::vector<int> getMemory() const;
 
-  int getSevenSeg() const;
+  void setSwitches(uint16_t bitmask);
+  uint16_t getRedLeds() const;
+  uint16_t getTimer() const;
+  uint16_t getXIO() const;
+  uint16_t getSevenSeg1() const;
+  uint16_t getSevenSeg2() const;
+  uint16_t getLCD() const;
+  uint16_t getXLeds() const;
+  uint16_t getBeep() const;
+  uint16_t getCTimer() const;
+  uint16_t getUARTData() const;
+  uint16_t getUARTRdy() const;
+
+  std::array<uint16_t, 8> getSonarDist() const;
+  uint16_t getSonalarmDist() const;
+  uint16_t getSonalarmFlags() const;
+  uint16_t getSonarInt() const;
+  uint16_t getSonarEn() const;
+
+  uint16_t getOdometryLPos() const;
+  uint16_t getOdometryLVel() const;
+  uint16_t getLVelCmd() const;
+  uint16_t getOdometryRPos() const;
+  uint16_t getOdometryRVel() const;
+  uint16_t getRVelCmd() const;
+  uint16_t getOdometryXPos() const;
+  uint16_t getOdometryYPos() const;
+  uint16_t getOdometryTheta() const;
+
+  Vec2D getTruePos() const;
+  double getTrueHeading() const;
+
+  double getTrueLVel() const;
+  double getTrueRVel() const;
 
 private:
   enum class State : uint8_t {
@@ -263,7 +296,7 @@ private:
   uint16_t m_io_switches;
   uint16_t m_io_redLeds;
   uint16_t m_io_timer;
-  uint16_t m_io_xio; // TODO: this is probably too long
+  uint16_t m_io_xio;
   uint16_t m_io_sevenSeg1;
   uint16_t m_io_sevenSeg2;
   uint16_t m_io_lcd;
@@ -281,7 +314,7 @@ private:
   uint16_t m_io_i2c_rdy;
   uint16_t m_io_uart_dat;
   uint16_t m_io_uart_rdy;
-  uint16_t m_io_sonar;
+  //uint16_t m_io_sonar; //TODO: what's this?
   std::array<uint16_t, 8> m_io_dist;
 
   uint16_t m_io_sonalarm_distance;
@@ -293,8 +326,8 @@ private:
   uint16_t m_io_ypos;
   uint16_t m_io_theta;
   uint16_t m_io_resetpos;
-  uint16_t m_io_rin;
-  uint16_t m_io_lin;
+  //uint16_t m_io_rin; //TODO: what's this?
+  //uint16_t m_io_lin; //TODO: what's this?
 
   // Used to track the sonars
   uint8_t last_sonar_used;
