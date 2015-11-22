@@ -75,51 +75,99 @@ WaitForUser:
 
 Main:
   OUT RESETPOS
-	LOADI  3
+  
+	LOAD	Point1X
+	SUB		Point0X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
 	STORE  AtanX      ; input to atan subroutine
 	STORE  L2X    	  ; input to distance estimation subroutine
-	LOADI  3
-	STORE  AtanY      ; input to atan subroutine
-	STORE  L2Y        ; input to distance estimation subroutine
-	CALL   Atan2      ; find the angle
-	STORE  CurrAng
-	OUT    SSEG1
-	CALL   L2Estimate ; estimate the distance
-	STORE  m16sA
+	LOAD	Point1Y
+	SUB		Point0Y
+	STORE  m16sA		; Converting Feet to ticks
 	LOAD   TicksPerFoot
 	STORE  m16sB
 	CALL   Mult16s
 	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	OUT    SSEG2
-Forward:
-  IN THETA
-  OUT LCD
-  LOADI 100
-  OUT LVelCmd
-  OUT RVelCmd
-  IN LPOS
-  SUB CurrDist
-  OUT LCD
-  JPOS Die
-  JUMP Forward
+	
+	CALL TurnCCWandForward
+
+
   
-TurnDegree:
-  LOADI 100 
-  OUT RVelCmd
-  LOADI -100
-  OUT LVelCmd
-  IN THETA
-  JZERO SkipIfZero
-  SUB Deg45
-  OUT LCD
-  JPOS Forward
  
-SkipIfZero:
-  JUMP TurnDegree
-  
+	LOAD	Point2X     ; SECOND POINT HARD CODED
+	SUB		Point1X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point2Y
+	SUB		Point1Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	OUT LCD
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	OUT LCD
+	SUB	   OneFoot
+	STORE OneFootLess
+	OUT    SSEG2
+	
+	
+	CALL TurnCCWandForward 
+	
+	LOAD	Point3X     ; SECOND POINT HARD CODED
+	SUB		Point2X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point3Y
+	SUB		Point2Y
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	OUT LCD
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	OUT LCD
+	SUB	   OneFoot
+	STORE OneFootLess
+	OUT    SSEG2
+	
+	
+	CALL TurnCCWandForward 
+ 
+ 
 
   
   
@@ -149,6 +197,75 @@ Forever:
 ;* Subroutines
 ;***************************************************************
 
+
+TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
+  LOADI 100 
+  OUT RVelCmd
+  LOADI -100
+  OUT LVelCmd
+  IN THETA
+  JZERO SkipIfZeroCCW
+  SUB CurrAng      ; should be between 0 and 179   ( 180 
+  OUT LCD
+  JPOS Waiting			; Change this to a appropriate jump later
+ 
+SkipIfZeroCCW:
+  JUMP TurnCCWandForward	
+  
+ Waiting:
+ LOADI 0
+ OUT RVelCmd
+ OUT LvelCmd
+ IN LVEL
+ JNEG Waiting
+ IN LPOS
+ STORE OLDPOS
+ 
+ Forward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
+  LOADI 1023
+  OUT LEDS
+  IN THETA
+  OUT LCD
+  LOADI 350
+  OUT LVelCmd
+  OUT RVelCmd
+  IN LPOS
+  SUB OLDPOS
+  SUB OneFootLess
+  JPOS Forward2
+  JUMP Forward
+
+Forward2: ; Move forward the remaining foot
+  IN THETA
+  OUT LCD
+  LOADI 100
+  OUT LVelCmd
+  OUT RVelCmd
+  IN LPOS
+  SUB OLDPOS
+  SUB CurrDist
+  
+  JPOS Forward3
+  JUMP Forward2
+  
+ Forward3:		; Return
+ RETURN
+ 
+ 
+ 
+ TurnCW:     ; Turns clockwise to the value of CurrAngle 
+  LOADI -100 
+  OUT RVelCmd
+  LOADI 100
+  OUT LVelCmd
+  IN THETA
+  JZERO SkipIfZeroCW
+  SUB CurrAng     ;  should be between 
+  OUT LCD
+  JPOS Die
+ 
+SkipIfZeroCW:
+  JUMP TurnCW
 ; Subroutine to wait (block) for 1 second
 Wait1:
 	OUT    TIMER
@@ -726,18 +843,19 @@ CT:  DW 0      ; sampled theta
 CurrDist:   DW 0      ; Current Distance
 OneFootLess: DW 0;   ; One foot less than current dist
 CurrAng:    DW 0      ; Current Angle
+OLDPOS:     DW 0      ; 
 
 
 Point0X: DW 0 
 Point0Y: DW 0 
 Point0R: DW 0
 
-Point1X: DW 0 
-Point1Y: DW 0 
+Point1X: DW 3
+Point1Y: DW 3
 Point1R: DW 0
 
-Point2X: DW 0 
-Point2Y: DW 0 
+Point2X: DW 3 
+Point2Y: DW 5 
 Point2R: DW 0 
 
 Point3X: DW 0 
