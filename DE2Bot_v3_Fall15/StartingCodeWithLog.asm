@@ -24,10 +24,7 @@
 ; code.
 ORG        &H000       ; Jump table is located in mem 0-4
 	JUMP   Init        ; Reset vector
-	RETI               ; Sonar interrupt (unused)
 	JUMP   CTimer_ISR  ; Timer interrupt
-	RETI               ; UART interrupt (unused)
-	RETI               ; Motor stall interrupt (unused)
 	
 ;***************************************************************
 ;* Initialization
@@ -75,177 +72,77 @@ WaitForUser:
 ;***************************************************************
 ;* Main code
 ;***************************************************************
-Main: ; "Real" program starts here.
-	; You will probably want to reset the position at the start your project code:
-	OUT    RESETPOS    ; reset odometer in case wheels moved after programming
-	CALL   UARTClear   ; empty the UART receive FIFO of any old data
-	JUMP   Example1
-	
-; This table is used in example 1.  Remember: DW puts these
-; values in memory, and since SCOMP has unified memory, it
-; doesn't much matter where these end up, as long as they don't
-; get executed.
-Table1:
-DW 55
-DW 72
-DW 0
-; Will use this as a pointer.  It's just a normal variable.
-Ptr1: DW 0
 
-Example1:
-; Example 1: using tables with ILOAD and ISTORE.
-; We'll add two numbers and put the result back in the table.
-	; LOADI takes an immediate, and here we're giving it the address
-	; of the table.  This will load AC with the address of the table.
-	LOADI  Table1
-	; Now we store that address in a variable
-	STORE  Ptr1 ; pointer to the table
-	; ILOAD (indirect load; not to be confused with LOADI) fetches the
-	; contents of memory at the address contained in a variable.  Since
-	; Ptr1 contains the address of the table, the following instruction
-	; will load AC with the first value in the table
-	ILOAD  Ptr1  ; get table value
-	STORE  Temp  ; keep first table value for later
-	LOAD   Ptr1
-	ADDI   1     ; increment the pointer
-	STORE  Ptr1  ; don't forget to store the new pointer value
-	ILOAD  Ptr1  ; get the second table value
-	ADD    Temp  ; add the first table value
-	STORE  Temp  ; save sum for later
-	LOAD   Ptr1
-	ADDI   1     ; increment the pointer (now at third value)
-	STORE  Ptr1
-	LOAD   Temp  ; get the sum back in AC
-	; Like ILOAD, ISTORE operates on the memory location contained
-	; in a variable.
-	ISTORE Ptr1  ; put the sum in memory at the third table entry
-	
-	; To prove that everything worked:
-	LOADI  Table1 ; get the table address fresh
-	ADDI   2     ; increment address to result entry
-	STORE  Temp  ; different variable to show that 'Ptr1' is nothing special
-	LOADI  0     ; clear the AC just to prove we're getting the table value
-	ILOAD  Temp  ; get the table value (3rd entry)
-	OUT    LCD   ; and display it for debugging purposes
-	; 55+72 = 127, or 0x7F
-	
-Example2:
-; Example 2: multiply and divide subroutines.
-; Included in this file are subroutines for 16-bit
-; signed multiply and divide.
-; Very important: multiplying two 16-bit numbers gives a
-; 32-bit result.  You need to pay attention to the size
-; of your numbers.
-; See the subroutines below for specific information.
-	; Multiply:
-	LOADI  1003     ; LOADI can load numbers up to 1023
-	STORE  m16sA    ; this is one input to the mult subroutine
-	LOADI  -1019
-	STORE  m16sB    ; this is the other number to multiply
-	CALL   Mult16s  ; call this to perform the multiplication
-	LOAD   mres16sH ; high word of the 32-bit result
-	OUT    SSEG1
-	LOAD   mres16sL ; low word of the 32-bit result
-	OUT    SSEG2
-	; 1003*-1019 = -1022057, or 0xFFF0_6797
-	; Note that just taking the low word would give you
-	; the completely wrong result (0x6797 = 26519).
-	
-	; Divide:
-	LOADI  1003
-	SHIFT  3
-	ADDI   334      ; 1003*8+334 = 8358
-	STORE  d16sN    ; this is the numerator to the div subroutine
-	LOADI  -29
-	STORE  d16sD    ; this is the denominator
-	CALL   Div16s   ; call this to perform the division
-	LOAD   dres16sQ ; quotient of division
-	OUT    LEDs
-	LOAD   dres16sR ; remainder of division
-	OUT    XLEDs
-	; 8358/-29 = -288 R6 = 0b1111111011100000 R0b0110
-	
-	
-	; wait here for a few seconds so you can see the results.
-	; you can also reset, if you want to re-run examples 1 & 2
-	LOADI  30       ; wait 3 seconds
-	CALL   WaitAC
-	
-Example3: 
-; Example 3: Angle and distance calculations
-; Once SCOMP enters this piece of code, you should roll it around
-; the floor.  The angle from (0,0) to the current position will
-; be displayed on sseg1, and the distance from (0,0) to the current
-; position will be displayed on sseg2.
-; Also, since position logging is enabled at the beginning
-; (by calling StartLog), the robot will be sending its current
-; X/Y coordinate to the server every half a second.
-; Finally, the first time the robot gets >2ft from (0,0), this
-; code will call the IndicatePos routine, which you will use to
-; tell the server when you reach each of your destinations.
-	LOADI  0
-	STORE  Tripped  ; used to indicate conditions in following code
-	; clear all displays
-	OUT    XLEDS
-	OUT    LEDS
-	OUT    LCD
-	OUT    SSEG1
-	OUT    SSEG2
-	CALL   StartLog    ; enable the interrupt-based position logging
-E3Loop:
-	IN     XPOS
+Main:
+  OUT RESETPOS
+	LOADI  3
 	STORE  AtanX      ; input to atan subroutine
-	STORE  L2X        ; input to distance estimation subroutine
-	IN     YPOS
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOADI  3
 	STORE  AtanY      ; input to atan subroutine
 	STORE  L2Y        ; input to distance estimation subroutine
 	CALL   Atan2      ; find the angle
+	STORE  CurrAng
 	OUT    SSEG1
 	CALL   L2Estimate ; estimate the distance
+	STORE  m16sA
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
 	OUT    SSEG2
-	
-	SUB    TwoFeet
-	JPOS   Over2Ft    ; if over 2ft, trip the indicator
-	JUMP   E3Loop     ; repeat forever
-Over2Ft:
-	LOAD   Tripped
-	JPOS   E3Loop     ; if already indicated, don't do it again
-	LOAD   TripCount  ; this example passes an incrementing count
-	                  ; to the IndicateDest subroutine.  Your code
-					  ; should pass the current destination number.
-	CALL   IndicateDest
-	LOADI  1
-	STORE  Tripped    ; remember that already indicated this round
-	LOAD   TripCount
-	ADDI   1
-	STORE  TripCount  ; increment the counter
-	LOAD   NegOne
-	OUT    LEDS       ; display for debug 
-	JUMP   E3Loop     ; repeat forever
-Tripped: DW 0
-TripCount: DW 0
-; note on TripCount: when the DE2 first gets programmed (from Quartus),
-; TripCount will be 0 in memory.  The above code increments it, but
-; never sets it back to 0.  That means that resetting SCOMP with
-; KEY0 will maintain TripCount's value.  So TripCount will continue
-; to increment, even though you reset SCOMP with KEY0.
+Forward:
+  IN THETA
+  OUT LCD
+  LOADI 100
+  OUT LVelCmd
+  OUT RVelCmd
+  IN LPOS
+  SUB CurrDist
+  OUT LCD
+  JPOS Die
+  JUMP Forward
+  
+TurnDegree:
+  LOADI 100 
+  OUT RVelCmd
+  LOADI -100
+  OUT LVelCmd
+  IN THETA
+  JZERO SkipIfZero
+  SUB Deg45
+  OUT LCD
+  JPOS Forward
+ 
+SkipIfZero:
+  JUMP TurnDegree
+  
 
+  
+  
 
+  
 
 Die:
 ; Sometimes it's useful to permanently stop execution.
 ; This will also catch the execution if it accidentally
 ; falls through from above.
-	LOAD   Zero        ; Stop everything.
+	LOAD   Zero         ; Stop everything.
 	OUT    LVELCMD
 	OUT    RVELCMD
 	OUT    SONAREN
-	LOAD   DEAD        ; An indication that we are dead
-	OUT    SSEG2
-	CALL   StopLog     ; Disable position logging
+	LOAD   DEAD         ; An indication that we are dead
+	
 Forever:
-	JUMP   Forever     ; Do this forever.
-DEAD:      DW &HDEAD   ; Example of a "local variable"
+	JUMP   Forever      ; Do this forever.
+	DEAD:  DW &HDEAD    ; Example of a "local" variable
+
+
+
+
 
 	
 ;***************************************************************
@@ -428,13 +325,11 @@ CTimer_ISR:
 	CALL   UARTSend2
 	LOAD   IDFlag ; check if user has request a destination indication
 	JPOS   CTIndicateDest ; if yes, do it; otherwise...
-	RETI   ; return from interrupt
 CTIndicateDest:
 	LOAD   IDNumber
 	CALL   UARTSend1 ; send the indicated destination
 	LOADI  0
 	STORE  IDFlag
-	RETI
 
 ; Configure the interrupt timer and enable interrupts
 StartLog:
@@ -445,13 +340,10 @@ StartLog:
 	STORE  IDFlag      ; clear any pending flag
 	LOADI  50
 	OUT    CTIMER      ; configure timer for 0.01*50=0.5s interrupts
-	CLI    &B0010      ; clear any pending interrupt from timer
-	SEI    &B0010      ; enable interrupt from timer (source 1)
 	RETURN
 
 ; Disable the interrupt timer and interrupts
 StopLog:
-	CLI    &B0010      ; disable interrupt source 1 (timer)
 	LOADI  0
 	OUT    CTIMER      ; reset configurable timer
 	RETURN
@@ -831,6 +723,63 @@ CDT: DW 0      ; current desired angle
 CX:  DW 0      ; sampled X
 CY:  DW 0      ; sampled Y
 CT:  DW 0      ; sampled theta
+CurrDist:   DW 0      ; Current Distance
+OneFootLess: DW 0;   ; One foot less than current dist
+CurrAng:    DW 0      ; Current Angle
+
+
+Point0X: DW 0 
+Point0Y: DW 0 
+Point0R: DW 0
+
+Point1X: DW 0 
+Point1Y: DW 0 
+Point1R: DW 0
+
+Point2X: DW 0 
+Point2Y: DW 0 
+Point2R: DW 0 
+
+Point3X: DW 0 
+Point3Y: DW 0 
+Point3R: DW 0
+
+Point4X: DW 0 
+Point4Y: DW 0 
+Point4R: DW 0
+
+Point5X: DW 0 
+Point5Y: DW 0 
+Point5R: DW 0
+
+Point6X: DW 0 
+Point6Y: DW 0 
+Point6R: DW 0
+
+Point7X: DW 0 
+Point7Y: DW 0 
+Point7R: DW 0
+
+Point8X: DW 0 
+Point8Y: DW 0 
+Point8R: DW 0
+
+Point9X: DW 0 
+Poiny9Y: DW 0 
+Point9R: DW 0
+
+Point10X: DW 0 
+Poiny10Y: DW 0 
+Point10R: DW 0
+
+Point11X: DW 0 
+Poiny11Y: DW 0 
+Point11R: DW 0
+
+Point12X: DW 0 
+Poiny12Y: DW 0 
+Point12R: DW 0
+
 
 ;***************************************************************
 ;* Constants
@@ -878,6 +827,8 @@ FMid:     DW 350       ; 350 is a medium speed
 RMid:     DW -350
 FFast:    DW 500       ; 500 is almost max speed (511 is max)
 RFast:    DW -500
+Deg45:	  DW 45
+Deg315:    DW 315
 
 MinBatt:  DW 130       ; 13.0V - minimum safe battery voltage
 I2CWCmd:  DW &H1190    ; write one i2c byte, read one byte, addr 0x90
@@ -906,7 +857,7 @@ I2C_CMD:  EQU &H90  ; I2C module's CMD register,
 I2C_DATA: EQU &H91  ; ... DATA register,
 I2C_RDY:  EQU &H92  ; ... and BUSY register
 UART_DAT: EQU &H98  ; UART data
-UART_RDY: EQU &H99  ; UART status
+UART_RDY: EQU &H98  ; UART status
 SONAR:    EQU &HA0  ; base address for more than 16 registers....
 DIST0:    EQU &HA8  ; the eight sonar distance readings
 DIST1:    EQU &HA9  ; ...
@@ -923,3 +874,6 @@ XPOS:     EQU &HC0  ; Current X-position (read only)
 YPOS:     EQU &HC1  ; Y-position
 THETA:    EQU &HC2  ; Current rotational position of robot (0-359)
 RESETPOS: EQU &HC3  ; write anything here to reset odometry to 0
+
+TicksPerFoot: DW 290 ;from 1.05 mm / tick, ~304 mm / foot
+Deg: DW 270
