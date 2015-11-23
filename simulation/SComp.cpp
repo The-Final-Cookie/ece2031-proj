@@ -947,7 +947,7 @@ void SComp::jneg() {
 }
 
 void SComp::jpos() {
-  if (!(ac & 0x8000)) {
+  if (!(ac & 0x8000) && ac != 0) {
     if (debugMode) {
       cout << "jump taken, ac is " << ac << " pc was: " << pc << ", becomes: " << (ir & address_mask) << endl;
     }
@@ -1011,7 +1011,7 @@ void SComp::shift() {
   if (ir & 0x10) { // negative shift -> right shift
     ac = (ac >> (ir & 0xF)) | (ac & 0x8000); // arithmetic shift
   } else {
-    ac <<= (ir & 0xF);
+    ac = (ac << (ir & 0xF));
   }
   
   if (debugMode) {
