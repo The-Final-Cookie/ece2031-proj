@@ -50,6 +50,8 @@ TenthUnitsInFoot: DW 2093 ; There are 209.2857... robot units in a foot
 StartSort:
   LOADI 1
   OUT XLEDS
+  LOAD Points
+  OUT LCD
   JUMP StartSort
 
 ;*******************************************************************************

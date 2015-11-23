@@ -908,7 +908,7 @@ void SComp::store2() {
 
 void SComp::add() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << (uint16_t)(ac + mdr) << endl;
+    cout << "ac was: " << ac << ", adding: " << mdr << " becomes: " << (uint16_t)(ac + mdr) << endl;
   }
 
   ac += mdr;
@@ -917,7 +917,7 @@ void SComp::add() {
 
 void SComp::sub() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << (uint16_t)(ac - mdr) << endl;
+    cout << "ac was: " << ac << ", subtracting: " << mdr << " becomes: " << (uint16_t)(ac - mdr) << endl;
   }
   ac -= mdr;
   state = State::FETCH;
@@ -976,7 +976,7 @@ void SComp::jzero() {
 
 void SComp::and_() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << (ac & mdr) << endl;
+    cout << "ac was: " << ac << ", anding: " << mdr << " becomes: " << (ac & mdr) << endl;
   }
 
   ac &= mdr;
@@ -985,16 +985,18 @@ void SComp::and_() {
 
 void SComp::or_() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << (ac | mdr) << endl;
+    cout << "ac was: " << ac << ", oring: " << mdr << " becomes: " << (ac | mdr) << endl;
   }
+
   ac |= mdr;
   state = State::FETCH;
 }
 
 void SComp::xor_() {
   if (debugMode) {
-    cout << "ac was: " << ac << ", becomes: " << (ac ^ mdr) << endl;
+    cout << "ac was: " << ac << ", xoring: " << mdr << " becomes: " << (ac ^ mdr) << endl;
   }
+
   ac ^= mdr;
   state = State::FETCH;
 }
@@ -1032,7 +1034,7 @@ void SComp::addi() {
   } else {
     ac += ir & address_mask;
     if (debugMode) {
-      cout << "adding: " << (ir & address_mask);
+      cout << " adding: " << (ir & address_mask);
     }
   }
   
@@ -1070,7 +1072,7 @@ void SComp::call() {
     cout << "calling: " << (ir & address_mask) << " from: " << pc
       << " current callstack: (";
 
-    for (size_t i = 0; i > pc_stack.size(); ++i) {
+    for (size_t i = 0; i < pc_stack.size(); ++i) {
       cout << pc_stack[i] << ", ";
     }
     cout << ")" << endl;
@@ -1089,7 +1091,7 @@ void SComp::return_() {
     cout << "returning to: " << pc_stack[0] << " from: " << pc
       << " current callstack: (";
 
-    for (size_t i = 0; i > pc_stack.size(); ++i) {
+    for (size_t i = 0; i < pc_stack.size(); ++i) {
       cout << pc_stack[i] << ", ";
     }
     cout << ")" << endl;
