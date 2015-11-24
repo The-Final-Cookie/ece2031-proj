@@ -1,16 +1,65 @@
   ORG &H000
 
+PathFind:
+; We should clear out data registers that we might have left data hanging around
+; inside
+
+; TODO We can do better, use loops and such to take care of this etc
+  LOADI 0
+  LOADI BestPoint
+  STORE Offset
+  LOADI 0
+  ISTORE Offset
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  LOADI 0
+  ISTORE Offset
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  LOADI 0
+  ISTORE Offset
+
+  LOADI CurrentPoint
+  STORE Offset
+  LOADI 0
+  ISTORE Offset
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  LOADI 0
+  ISTORE Offset
+  STORE Idx
+  STORE Jdx
+  STORE Offset
+
+; First we need to convert the data points into robot units
 ConvertToUnits:
   LOADI Points 
   ADD Idx
   ADD Idx
-  OUT LEDS
   STORE Offset
+  LOADI ConvertedPoints
+  ADD Idx
+  ADD Idx
+  ADD Idx
+  STORE ConvertedOffset
   CALL FeetToUnits
   LOAD Offset
   ADDI 1
   STORE Offset
+  LOAD ConvertedOffset
+  ADDI 1
+  STORE ConvertedOffset
   CALL FeetToUnits
+  ; Now store the index along with the point
+  LOAD ConvertedOffset
+  ADDI 1
+  STORE ConvertedOffset
+  LOAD Idx
+  ADDI 1
+  ISTORE ConvertedOffset
   LOAD Idx
   ADDI 1
   STORE Idx
@@ -26,7 +75,6 @@ FeetToUnits:
   STORE m16sB
   CALL Mult16s ; Because we know that we won't be given values higher than 6
   LOAD mres16sL ; We only need to load the low word 
-  OUT LEDS
   STORE d16sN ; and / 10 and do a round
   LOADI 10
   STORE d16sD
@@ -40,19 +88,102 @@ FeetToUnits:
 
 SkipRound:
   LOAD dres16sQ
-  ISTORE Offset
+  ISTORE ConvertedOffset
   RETURN
 
 Idx: DW 0 ; index for loop
+Jdx: DW 0 ; index for 2nd loop
 Offset: DW 0
+Offset1: DW 0
+ConvertedOffset: DW 0
 TenthUnitsInFoot: DW 2093 ; There are 209.2857... robot units in a foot
 
+; Copies point from one offset to another
+; Accepts input from Offset and Offset1, copies the contents of Offset to
+; Offset1, points are three memory addresses in contiguous memory (x, y, count)
+; This function modifies Offset and Offset1 and CopyPointIdx
+CopyPoint:
+  ILOAD Offset  ; from P1 x
+  ISTORE Offset1  ; to P2 x
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  LOAD Offset1
+  ADDI 1
+  STORE Offset1
+  ILOAD Offset  ; from P1 y
+  ISTORE Offset1  ; to P2 y
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  LOAD Offset1
+  ADDI 1
+  STORE Offset1
+  ILOAD Offset  ; from P1 count
+  ISTORE Offset1  ; to P2 count
+  RETURN
+
 StartSort:
-  LOADI 1
-  OUT XLEDS
-  LOAD Points
-  OUT LCD
+  ; Starting point is (0,0), should be initialized at the top
+
+  ;LOADI 1
+  ;OUT XLEDS ; Signal to the simulator that we're finished
+  LOADI 0
+  STORE Idx ; loop variable
+
+  OuterDistLoop:
+
+    ; pointsLeft = 12 - i
+    LOADI 12
+    SUB Idx
+    STORE PointsLeft
+
+    LOAD c7FFF ; max int
+    STORE BestCost
+
+    LOADI 0
+    STORE Jdx ; start the loop for Jdx
+    InnerDistLoop:
+      ; Calculate cost reads from Offset indirectly and the next memory location
+      ; after.  It also reads from the Current Point, which ought to already be
+      ; set up from the previous loop part
+      LOADI ConvertedPoints
+      ADD Jdx
+      STORE Offset
+      CALL CalculateCost ; outputs to ThisCost
+      LOAD ThisCost
+      SUB BestCost
+      LOAD Jdx
+      JPOS UpdateInnerLoop 
+      LOADI ConvertedPoints ; if this point is better than previous
+      ADD Jdx
+      STORE Offset
+      LOADI BestPoint
+      STORE Offset1
+      CALL CopyPoint
+
+      UpdateInnerLoop:
+      LOAD Jdx
+      ADDI 3 ; Our entry size is 3, so we have to jump 3 per iteration
+      STORE Jdx
+      SUB PointsLeft
+      SUB PointsLeft
+      SUB PointsLeft
+      
+
   JUMP StartSort
+
+ThisCost: DW 0
+PointsLeft: DW 0
+BestCost: DW 0
+BestPoint:
+  DW 0 ; x
+  DW 0 ; y
+  DW 0 ; index + 1 (for reporting)
+CurrentPoint:
+  DW 0
+  DW 0
+  DW 0
 
 ;*******************************************************************************
 ; L2Estimate:  Pythagorean distance estimation
@@ -318,7 +449,7 @@ Points:
   DW -4 ; Entry 11 x
   DW -2 ; Entry 11 y
 
-OutPoints:
+ConvertedPoints:
   DW 0 ; Entry 00 x
   DW 0 ; Entry 00 y
   DW 0 ; Entry 00 count
@@ -355,6 +486,48 @@ OutPoints:
   DW 0 ; Entry 11 x
   DW 0 ; Entry 11 y
   DW 0 ; Entry 11 count
+
+OutPoints:
+  DW 0 ; Entry 00 x
+  DW 0 ; Entry 00 y
+  DW 0 ; Entry 00 count
+RealOutPoints:
+  DW 0 ; Entry 01 x
+  DW 0 ; Entry 01 y
+  DW 0 ; Entry 01 count
+  DW 0 ; Entry 02 x
+  DW 0 ; Entry 02 y
+  DW 0 ; Entry 02 count
+  DW 0 ; Entry 03 x
+  DW 0 ; Entry 03 y
+  DW 0 ; Entry 03 count
+  DW 0 ; Entry 04 x
+  DW 0 ; Entry 04 y
+  DW 0 ; Entry 04 count
+  DW 0 ; Entry 05 x
+  DW 0 ; Entry 05 y
+  DW 0 ; Entry 05 count
+  DW 0 ; Entry 06 x
+  DW 0 ; Entry 06 y
+  DW 0 ; Entry 06 count
+  DW 0 ; Entry 07 x
+  DW 0 ; Entry 07 y
+  DW 0 ; Entry 07 count
+  DW 0 ; Entry 08 x
+  DW 0 ; Entry 08 y
+  DW 0 ; Entry 08 count
+  DW 0 ; Entry 09 x
+  DW 0 ; Entry 09 y
+  DW 0 ; Entry 09 count
+  DW 0 ; Entry 10 x
+  DW 0 ; Entry 10 y
+  DW 0 ; Entry 10 count
+  DW 0 ; Entry 11 x
+  DW 0 ; Entry 11 y
+  DW 0 ; Entry 11 count
+  DW 0 ; Entry 12 x
+  DW 0 ; Entry 12 y
+  DW 0 ; Entry 12 count
 
 ;***************************************************************
 ;* IO address space map
