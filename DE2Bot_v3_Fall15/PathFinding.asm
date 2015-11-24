@@ -248,6 +248,8 @@ CalculateCost:
   CALL L2Estimate
   STORE ThisCost
 
+  RETURN ; skip theta calc TODO FIX THIS
+
   LOADI 1
   STORE A2retrad
   LOADI 402 ; pi/2 with 8 fractional bits
@@ -734,30 +736,30 @@ LowNibl:  DW &HF       ; 0000 0000 0000 1111
 ORG &H300
 
 Points:
-  DW -4 ; Entry 00 x
-  DW 1 ; Entry 00 y
-  DW 3 ; Entry 01 x
-  DW -2 ; Entry 01 y
+  DW 5 ; Entry 00 x
+  DW -4 ; Entry 00 y
+  DW 4 ; Entry 01 x
+  DW 1 ; Entry 01 y
   DW -3 ; Entry 02 x
-  DW -1 ; Entry 02 y
-  DW 1 ; Entry 03 x
+  DW 4 ; Entry 02 y
+  DW 0 ; Entry 03 x
   DW 4 ; Entry 03 y
-  DW -2 ; Entry 04 x
-  DW -4 ; Entry 04 y
-  DW 0 ; Entry 05 x
-  DW -5 ; Entry 05 y
-  DW -3 ; Entry 06 x
-  DW 2 ; Entry 06 y
-  DW 2 ; Entry 07 x
-  DW -3 ; Entry 07 y
-  DW 2 ; Entry 08 x
-  DW 5 ; Entry 08 y
-  DW -2 ; Entry 09 x
-  DW 4 ; Entry 09 y
-  DW 3 ; Entry 10 x
-  DW -3 ; Entry 10 y
+  DW 0 ; Entry 04 x
+  DW -1 ; Entry 04 y
+  DW -2 ; Entry 05 x
+  DW -6 ; Entry 05 y
+  DW 0 ; Entry 06 x
+  DW -6 ; Entry 06 y
+  DW 0 ; Entry 07 x
+  DW -5 ; Entry 07 y
+  DW -2 ; Entry 08 x
+  DW 4 ; Entry 08 y
+  DW 2 ; Entry 09 x
+  DW 0 ; Entry 09 y
+  DW 5 ; Entry 10 x
+  DW -2 ; Entry 10 y
   DW -4 ; Entry 11 x
-  DW -2 ; Entry 11 y
+  DW -6 ; Entry 11 y
 
 MemoryDumpMarker:
   DW &H4141
