@@ -49,20 +49,13 @@ ARCHITECTURE a OF SCOMP IS
 		EX_OUT,
 		EX_OUT2,
 		EX_LOADI,
-		EX_RETI,
-    EX_PUSH,
-		EX_PUSH2,
-		EX_PUSH3,
-    EX_POP,
-    EX_POP2
+		EX_RETI
 	);
 
 	TYPE PC_STACK_TYPE IS ARRAY (0 TO 9) OF STD_LOGIC_VECTOR(10 DOWNTO 0);
-  TYPE STACK_TYPE IS ARRAY (0 TO 1023) OF STD_LOGIC_VECTOR(15 DOWNTO 0);
 
 	SIGNAL STATE        : STATE_TYPE;
 	SIGNAL PC_STACK     : PC_STACK_TYPE;
-  SIGNAL REG_STACK    : STACK_TYPE;
 	SIGNAL IO_IN        : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC           : STD_LOGIC_VECTOR(15 DOWNTO 0);
 	SIGNAL AC_SAVED     : STD_LOGIC_VECTOR(15 DOWNTO 0);
@@ -156,7 +149,6 @@ BEGIN
 			CASE STATE IS
 				WHEN RESET_PC =>
 					MW        <= '0';          -- Clear memory write flag
-					STACK_W   <= '0';          -- Clear stack write flag
 					PC        <= "00000000000"; -- Reset PC to the beginning of memory, address 0x000
 					AC        <= x"0000";      -- Clear AC register
 					SP        <= "00000000000"; -- Reset SP to 0
@@ -169,7 +161,6 @@ BEGIN
 
 				WHEN FETCH =>
 					MW    <= '0';       -- Clear memory write flag
-					STACK_W <= '0';
 					IR    <= MDR;       -- Latch instruction into the IR
 					IO_WRITE_INT <= '0';       -- Lower IO_WRITE after an OUT
 					-- Interrupt Control
@@ -252,9 +243,6 @@ BEGIN
 						WHEN "10111" =>       -- LOADI
 							STATE <= EX_LOADI;
             WHEN "11000" =>       -- PUSH
-              STATE <= EX_PUSH;
-            WHEN "11001" =>       -- POP
-              STATE <= EX_POP
 
 						WHEN OTHERS =>
 							STATE <= FETCH;      -- Invalid opcodes default to NOP
@@ -371,26 +359,6 @@ BEGIN
 					GIE   <= '1';      -- re-enable interrupts
 					PC    <= PC_SAVED; -- restore saved registers
 					AC    <= AC_SAVED;
-					STATE <= FETCH;
-
-				WHEN EX_PUSH =>
-					STACK_W <= '1';
-					STATE <= EX_PUSH2;
-
-				WHEN EX_PUSH2 =>
-					STACK_W <= '0';
-					STATE <= EX_PUSH3;
-
-				WHEN EX_PUSH3 =>
-					SP <= SP + 1;
-					STATE <= FETCH;
-
-				WHEN EX_POP =>
-          AC <= REG_STACK(SP);
-          STATE <= EX_POP2;
-
-				WHEN EX_POP2 =>
-					SP <= SP - 1;
 					STATE <= FETCH;
 
 				WHEN OTHERS =>
