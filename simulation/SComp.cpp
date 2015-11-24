@@ -181,10 +181,27 @@ void SComp::runState() {
     if (debugMode) {
       cout << "Storing " << ac << " to address: " << mem_addr
         << ", previous value: " << memory[mem_addr] << endl;
+      cout << "Best Point: " << memory[0xDF] << " " << memory[0xE0] << " " <<
+      memory[0xE1] << endl;
+      cout << "Current Point: " << memory[0xE2] << " " << memory[0xE3] << " " <<
+      memory[0xE4] << endl;
+      for (int i = 0x31C; i < 0x33F; i+=3) {
+        cout << "CP: " << memory[i] << " " << memory[i+1] << " " << memory[i+2]
+        << endl;
+      }
+      cout << "Offset: " << memory[0x49] << endl;
+      cout << "OffsetTo: " << memory[0x4A] << endl;
     }
-    if (mem_addr > 700) {
+    if (mem_addr > 0x36A) {
       cout << "Out of Range Store: " << ac << " to address: " << mem_addr
         << " from: " << pc << endl;
+      cout << "Stack: (";
+      for (auto i : pc_stack) {
+        cout << i << ", ";
+      }
+      cout << ")" << endl;
+      cout << "Best Point: " << memory[0xE0] << " " << memory[0xE1] << " " <<
+      memory[0xE2] << endl;
     }
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];

@@ -28,8 +28,8 @@ int main(int argc, char** argv) {
   SComp scomp(mifData, isCode);
   do {
     scomp.stepInstruction();
-    if (scomp.getPC() > 138 &&
-        scomp.getPC() <= 148) {
+    if (scomp.getPC() > 0x8B &&
+        scomp.getPC() <= 0x9A) {
       scomp.setDebug(true);
     } else {
       scomp.setDebug(false);

@@ -91,7 +91,7 @@ Temp: DW 0 ; dumb name
 Idx: DW 0 ; index for loop
 Jdx: DW 0 ; index for 2nd loop
 Offset: DW 0
-Offset1: DW 0
+OffsetTo: DW 0
 HeadingTheta: DW 0 ; atan2 radians units (8 fractional bits)
 TempTheta: DW 0 ; temporarily stores the candidate new heading during CalcCost
 ConvertedOffset: DW 0
@@ -99,28 +99,28 @@ SixteenthUnitsInFoot: DW 4644 ; There are 209.2857... robot units in a foot,
                               ; using four fractional bits
 
 ; Copies point from one offset to another
-; Accepts input from Offset and Offset1, copies the contents of Offset to
-; Offset1, points are three memory addresses in contiguous memory (x, y, count)
-; This function modifies Offset and Offset1 and CopyPointIdx
+; Accepts input from Offset and OffsetTo, copies the contents of Offset to
+; OffsetTo, points are three memory addresses in contiguous memory (x, y, count)
+; This function modifies Offset and OffsetTo and CopyPointIdx
 CopyPoint:
   ILOAD Offset  ; from P1 x
-  ISTORE Offset1  ; to P2 x
+  ISTORE OffsetTo  ; to P2 x
   LOAD Offset
   ADDI 1
   STORE Offset
-  LOAD Offset1
+  LOAD OffsetTo
   ADDI 1
-  STORE Offset1
+  STORE OffsetTo
   ILOAD Offset  ; from P1 y
-  ISTORE Offset1  ; to P2 y
+  ISTORE OffsetTo  ; to P2 y
   LOAD Offset
   ADDI 1
   STORE Offset
-  LOAD Offset1
+  LOAD OffsetTo
   ADDI 1
-  STORE Offset1
+  STORE OffsetTo
   ILOAD Offset  ; from P1 count
-  ISTORE Offset1  ; to P2 count
+  ISTORE OffsetTo  ; to P2 count
   RETURN
 
 StartSort:
@@ -151,17 +151,21 @@ StartSort:
       ADD Jdx
       STORE Offset
       CALL CalculateCost ; outputs to ThisCost
-      LOAD ThisCost
-      SUB BestCost
-      JPOS UpdateInnerLoop 
+      LOAD BestCost
+      SUB ThisCost
+      JNEG UpdateInnerLoop 
       LOADI ConvertedPoints ; if this point is better than previous
       ADD Jdx
       STORE Offset
       LOADI BestPoint
-      STORE Offset1
+      STORE OffsetTo
       CALL CopyPoint
       LOAD TempTheta
       STORE BestTheta
+      LOAD ThisCost
+      STORE BestCost
+      LOAD Jdx
+      STORE BestIdx
 
       UpdateInnerLoop:
       LOAD Jdx
@@ -179,30 +183,33 @@ StartSort:
     ADD Idx
     ADD Idx
     ADD Idx
-    STORE Offset1
+    STORE OffsetTo
     CALL CopyPoint
 
     ; Copy the last point in the list to the area we just copied (effectively
     ; reduces the size of the list by one and removes the point we just used
     ; from consideration)
 
-    LOADI BestPoint
-    ADDI 2
-    STORE Offset
-    ILOAD Offset
-    ADDI -1 ; AC now contains the index of the point we just copied
-    STORE Offset1
     LOADI ConvertedPoints
-    ADD Offset1
-    ADD Offset1
-    ADD Offset1
-    STORE Offset1 ; pointer to the point we just copied
+    ADD BestIdx ; already multiplied by 3
+    STORE OffsetTo ; pointer to the point we just copied
 
     LOADI ConvertedPoints
     ADD PointsLeft
+    ADD PointsLeft
+    ADD PointsLeft
+    ADDI -1
+    ADDI -1
     ADDI -1
     STORE Offset
 
+    CALL CopyPoint
+
+    ; currentPoint = bestPoint
+    LOADI BestPoint
+    STORE Offset
+    LOADI CurrentPoint
+    STORE OffsetTo
     CALL CopyPoint
 
     LOAD Idx
@@ -289,6 +296,7 @@ ThisCost: DW 0
 PointsLeft: DW 0
 BestCost: DW 0
 BestTheta: DW 0 ; stored with 8 fractional bits
+BestIdx: DW 0
 BestPoint:
   DW 0 ; x
   DW 0 ; y
@@ -723,6 +731,8 @@ Mask7:    DW &B10000000
 LowByte:  DW &HFF      ; binary 00000000 1111111
 LowNibl:  DW &HF       ; 0000 0000 0000 1111
 
+ORG &H300
+
 Points:
   DW -4 ; Entry 00 x
   DW 1 ; Entry 00 y
@@ -750,10 +760,10 @@ Points:
   DW -2 ; Entry 11 y
 
 MemoryDumpMarker:
-  DW &H5555
-  DW &H5555
-  DW &H5555
-  DW &H5555
+  DW &H4141
+  DW &H4141
+  DW &H4141
+  DW &H4141
 
 ConvertedPoints:
   DW 0 ; Entry 00 x
@@ -794,10 +804,10 @@ ConvertedPoints:
   DW 0 ; Entry 11 count
 
 MemoryDumpMarker2:
-  DW &H5555
-  DW &H5555
-  DW &H5555
-  DW &H5555
+  DW &H4141
+  DW &H4141
+  DW &H4141
+  DW &H4141
 
 OutPoints:
   DW 0 ; Entry 00 x
