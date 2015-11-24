@@ -182,6 +182,10 @@ void SComp::runState() {
       cout << "Storing " << ac << " to address: " << mem_addr
         << ", previous value: " << memory[mem_addr] << endl;
     }
+    if (mem_addr > 700) {
+      cout << "Out of Range Store: " << ac << " to address: " << mem_addr
+        << " from: " << pc << endl;
+    }
     memory[mem_addr] = ac;
     m_wroteToCode = isCode[mem_addr];
     if (debugMode && m_wroteToCode) {
@@ -779,102 +783,102 @@ void SComp::fetchAndHandleInt() {
 void SComp::decode() {
   switch (ir >> 11) {
     case 0x0:
-      if (debugMode) cout << pc << " " << "state = State::FETCH;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::FETCH;" << endl;
       state = State::FETCH;
       break;
     case 0x1:
-      if (debugMode) cout << pc << " " << "state = State::EX_LOAD;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_LOAD;" << endl;
       state = State::EX_LOAD;
       break;
     case 0x2:
-      if (debugMode) cout << pc << " " << "state = State::EX_STORE;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_STORE;" << endl;
       state = State::EX_STORE;
       break;
     case 0x3:
-      if (debugMode) cout << pc << " " << "state = State::EX_ADD;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_ADD;" << endl;
       state = State::EX_ADD;
       break;
     case 0x4:
-      if (debugMode) cout << pc << " " << "state = State::EX_SUB;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_SUB;" << endl;
       state = State::EX_SUB;
       break;
     case 0x5:
-      if (debugMode) cout << pc << " " << "state = State::EX_JUMP;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_JUMP;" << endl;
       state = State::EX_JUMP;
       break;
     case 0x6:
-      if (debugMode) cout << pc << " " << "state = State::EX_JNEG;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_JNEG;" << endl;
       state = State::EX_JNEG;
       break;
     case 0x7:
-      if (debugMode) cout << pc << " " << "state = State::EX_JPOS;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_JPOS;" << endl;
       state = State::EX_JPOS;
       break;
     case 0x8:
-      if (debugMode) cout << pc << " " << "state = State::EX_JZERO;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_JZERO;" << endl;
       state = State::EX_JZERO;
       break;
     case 0x9:
-      if (debugMode) cout << pc << " " << "state = State::EX_AND;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_AND;" << endl;
       state = State::EX_AND;
       break;
     case 0xA:
-      if (debugMode) cout << pc << " " << "state = State::EX_OR;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_OR;" << endl;
       state = State::EX_OR;
       break;
     case 0xB:
-      if (debugMode) cout << pc << " " << "state = State::EX_XOR;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_XOR;" << endl;
       state = State::EX_XOR;
       break;
     case 0xC:
-      if (debugMode) cout << pc << " " << "state = State::EX_SHIFT;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_SHIFT;" << endl;
       state = State::EX_SHIFT;
       break;
     case 0xD:
-      if (debugMode) cout << pc << " " << "state = State::EX_ADDI;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_ADDI;" << endl;
       state = State::EX_ADDI;
       break;
     case 0xE:
-      if (debugMode) cout << pc << " " << "state = State::EX_ILOAD;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_ILOAD;" << endl;
       state = State::EX_ILOAD;
       break;
     case 0xF:
-      if (debugMode) cout << pc << " " << "state = State::EX_ISTORE;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_ISTORE;" << endl;
       state = State::EX_ISTORE;
       break;
     case 0x10:
-      if (debugMode) cout << pc << " " << "state = State::EX_CALL;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_CALL;" << endl;
       state = State::EX_CALL;
       break;
     case 0x11:
-      if (debugMode) cout << pc << " " << "state = State::EX_RETURN;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_RETURN;" << endl;
       state = State::EX_RETURN;
       break;
     case 0x12:
-      if (debugMode) cout << pc << " " << "state = State::EX_IN;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_IN;" << endl;
       state = State::EX_IN;
       break;
     case 0x13:
-      if (debugMode) cout << pc << " " << "state = State::EX_OUT;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_OUT;" << endl;
       state = State::EX_OUT;
       io_write_int = true;
       break;
     case 0x14: // CLI
-      if (debugMode) cout << pc << " " << "CLI" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "CLI" << endl;
       state = State::FETCH;
       iie &= (~ir & 0xF); // AND NOT IR(3 DOWNTO 0)
       break;
     case 0x15: // SEI
-      if (debugMode) cout << pc << " " << "SEI" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "SEI" << endl;
       state = State::FETCH;
       iie |= (ir & 0xF); //OR IR(3 DOWNTO 0)
       break;
     case 0x16:
-      if (debugMode) cout << pc << " " << "state = State::EX_RETI;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_RETI;" << endl;
       state = State::EX_RETI;
       break;
     case 0x17:
-      if (debugMode) cout << pc << " " << "state = State::EX_LOADI;" << endl;
+      if (debugMode) cout << std::hex << pc << std::dec << " " << "state = State::EX_LOADI;" << endl;
       state = State::EX_LOADI;
       break;
     default:

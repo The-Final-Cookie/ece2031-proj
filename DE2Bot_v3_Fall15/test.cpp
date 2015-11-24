@@ -11,7 +11,7 @@
     for (int j = 0; j < pointsLeft; ++j) {
       thisCost = calculateCost(currentPoint, points[j])
       if (thisCost < bestCost)
-        bestPoint = {points[j], j+1}
+        bestPoint = points[j]
     }
 
     outPoints[i] = bestPoint
@@ -22,4 +22,12 @@
 
     currentPoint = bestPoint
   }
+}
+
+{
+  calculateCost()
+
+  xdiff = currentPoint[0] - points[i][0]
+  ydiff = currentPoint[1] - points[i][1]
+  cost = pyth(a, b) + mod(atan2(ydiff, xdiff) - theta, pi/2) * 113 // 227 is axle_track radius in robounits
 }
