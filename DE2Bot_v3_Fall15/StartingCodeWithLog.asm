@@ -25,7 +25,7 @@
 ORG        &H000       ; Jump table is located in mem 0-4
 	JUMP   Init        ; Reset vector
 	JUMP   CTimer_ISR  ; Timer interrupt
-
+	
 ;***************************************************************
 ;* Initialization
 ;***************************************************************
@@ -37,7 +37,7 @@ Init:
 	OUT    RVELCMD
 	OUT    SONAREN     ; Disable sonar (optional)
 	OUT    BEEP        ; Stop any beeping
-
+	
 	CALL   SetupI2C    ; Configure the I2C to read the battery voltage
 	CALL   BattCheck   ; Get battery voltage (and end if too low).
 	OUT    LCD         ; Display batt voltage on LCD
@@ -52,7 +52,7 @@ WaitForSafety:
 	SHIFT  8           ; Shift over to LED17
 	OUT    XLEDS       ; LED17 blinks at 2.5Hz (10Hz/4)
 	JUMP   WaitForSafety
-
+	
 WaitForUser:
 	; Wait for user to press PB3
 	IN     TIMER       ; We'll blink the LEDs above PB3
@@ -68,26 +68,16 @@ WaitForUser:
 	LOAD   Zero
 	OUT    XLEDS       ; clear LEDs once ready to continue
 	JUMP   Main
-
+	
 ;***************************************************************
 ;* Main code
 ;***************************************************************
 
 Main:
   OUT RESETPOS
-
-  LOADI 0
-	STORE isPoint0
-Loop:  
-	LOAD done;
-	JPOS Die;
-	CALL SetLoopValues
-
-	;now we have generic values that are stored in 
-	;curPointx, curPointy, nextPointx, nextPointy
-
-	LOAD	nextPointx
-	SUB		curPointx
+  
+	LOAD	Point1X
+	SUB		Point0X
 	STORE  m16sA       ; Converting Feet to ticks
 	LOAD   TicksPerFoot 
 	STORE  m16sB        
@@ -95,8 +85,8 @@ Loop:
 	LOAD   mres16sL      
 	STORE  AtanX      ; input to atan subroutine
 	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	nextPointy
-	SUB		curPointy
+	LOAD	Point1Y
+	SUB		Point0Y
 	STORE  m16sA		; Converting Feet to ticks
 	LOAD   TicksPerFoot
 	STORE  m16sB
@@ -105,26 +95,81 @@ Loop:
 	STORE  AtanY      ; input to atan subroutine
 	STORE  L2Y        ; input to distance estimation subroutine
 	CALL   Atan2      ; find the angle
-	STORE  CurrAngle
-	JPOS DontAdjust
-	ADDI 360
-	STORE CurrAngle
-	OUT LCD
-	DontAdjust:
+	STORE  CurrAng
 	CALL   L2Estimate ; estimate the distance
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
+	
+	CALL TurnCCWandForward
 
-	CALL DirectionAndAngle
-	LOAD DirectionToGo
-	OUT LCD
-	JPOS callTurnCW
-	JZERO callTurnCCW 
-	callTurnCW: CALL TurnCW
-				JUMP Loop
-	callTurnCCW: CALL TurnCCW
-				 JUMP Loop
+
+  
+ 
+	LOAD	Point2X     ; SECOND POINT HARD CODED
+	SUB		Point1X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point2Y
+	SUB		Point1Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	OUT    SSEG2
+	
+	
+	CALL TurnCCWandForward 
+	
+	LOAD	Point3X     ; SECOND POINT HARD CODED
+	SUB		Point2X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point3Y
+	SUB		Point2Y
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	OUT    SSEG2
+	
+	
+	CALL TurnCCWandForward 
+ 
+ 
+
+  
+  
+
+  
 
 Die:
 ; Sometimes it's useful to permanently stop execution.
@@ -135,365 +180,117 @@ Die:
 	OUT    RVELCMD
 	OUT    SONAREN
 	LOAD   DEAD         ; An indication that we are dead
-
+	
 Forever:
 	JUMP   Forever      ; Do this forever.
 	DEAD:  DW &HDEAD    ; Example of a "local" variable
 
+
+
+
+
+	
 ;***************************************************************
 ;* Subroutines
 ;***************************************************************
 
-; Direction and Angle, to call set CurrAngle, this function will read from THETA
-; directly, output is in DirectionToGo (clockwise = 1, ccw = 0) and AngleToGo
-; range (0-359)
-
-DirectionAndAngle:
+ TurnCCWandForward: 
+  LOADI 0
+  STORE amtTurned
+  IN THETA
+  STORE thetaold
   LOADI 360
-  STORE PosModuloD
-  IN THETA
-  STORE DirAndAngTemp
-  LOAD CurrAngle
-  SUB DirAndAngTemp
-  CALL PosModulo
-  ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
-  JNEG DirectionAndAngle_CCW
-  ADDI -180
-  CALL Abs
-  STORE AngleToGo
-  LOADI 1
-  STORE DirectionToGo
-  RETURN
-
-  DirectionAndAngle_CCW:
-  LOADI 0
-  STORE DirectionToGo
-  IN THETA
-  STORE DirAndAngTemp
-  LOAD CurrAngle
-  SUB DirAndAngTemp
-  CALL PosModulo ; %360
-  STORE AngleToGo
-  RETURN
-
-; Turning clockwise and move forward
-
- TurnCW: 
-  LOADI 0
-  STORE amtTurned
- 
- TurnCWLoop:
-  IN THETA
-  LOAD thetaold
-  LOADI -100 
-  OUT RVelCmd
-  LOADI 100
-  OUT LVelCmd
-  IN THETA
-  LOAD thetanew
   SUB thetaold
+  ADD CurrAng
   CALL Mod360
-  ADD amtTurned
-  STORE amtTurned
-  SUB AngleToGo
-  JPOS CWWaiting
-  
-			; Change this to a appropriate jump later
-waitCW: JUMP TurnCWLoop
+  STORE AngleToGo
 
- CWWaiting:
- LOADI 0
- OUT RVelCmd
- OUT LvelCmd
- IN LVEL
- JNEG CWWaiting
- IN LPOS
- STORE OLDPOS
 
- CWForward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
-  LOADI 1023
-  OUT LEDS
-  IN THETA
-  OUT LCD
-  LOADI 350
-  OUT LVelCmd
-  OUT RVelCmd
-  IN LPOS
-  SUB OLDPOS
-  SUB OneFootLess
-  JPOS CWForward2
-  JUMP CWForward
-
-CWForward2: ; Move forward the remaining foot
-  IN THETA
-  OUT LCD
-  LOADI 100
-  OUT LVelCmd
-  OUT RVelCmd
-  IN LPOS
-  SUB OLDPOS
-  SUB CurrDist
-  JPOS CWForward3
-  JUMP CWForward2
-
-CWForward3: RETURN
-
-; Turning counter-clockwise and move forward
-
-TurnCCW: 
-  LOADI 0
-  STORE amtTurned
  
- TurnCCWLoop: 
-  IN THETA
-  LOAD thetaold
+ TurnCCWLoop:
+
   LOADI 100 
   OUT RVelCmd
   LOADI -100
   OUT LVelCmd
   IN THETA
-  LOAD thetanew
-  LOAD thetanew
   SUB thetaold
-  CALL Mod360
-  ADD amtTurned
-  STORE amtTurned
-  SUB AngleToGo
-  JPOS CCWWaiting
- 
-waitCCW: JUMP TurnCCWLoop
 
- CCWWaiting:
+  STORE amtTurned
+  LOAD amtTurned
+  JPOS Skip
+  JZERO Skip
+  ADD Deg360
+  STORE amtTurned
+  
+Skip:  
+  LOAD amtTurned
+  SUB AngleToGo
+
+  JPOS Waiting
+  JUMP TurnCCWLoop
+  
+ Waiting:
  LOADI 0
  OUT RVelCmd
  OUT LvelCmd
  IN LVEL
- JNEG CCWWaiting
+ JNEG Waiting
+ IN RVEL
+ JNEG Waiting
  IN LPOS
  STORE OLDPOS
-
- CCWForward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
+ 
+ Forward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
   LOADI 1023
   OUT LEDS
   IN THETA
-  OUT LCD
   LOADI 350
   OUT LVelCmd
   OUT RVelCmd
   IN LPOS
   SUB OLDPOS
   SUB OneFootLess
-  JPOS CCWForward2
-  JUMP CCWForward
+  JPOS Forward2
+  JUMP Forward
 
-CCWForward2: ; Move forward the remaining foot
+Forward2: ; Move forward the remaining foot
   IN THETA
-  OUT LCD
   LOADI 100
   OUT LVelCmd
   OUT RVelCmd
   IN LPOS
   SUB OLDPOS
   SUB CurrDist
-  JPOS CCWForward3
-  JUMP CCWForward2
-
-CCWForward3: RETURN
-
-;Change current x and y to match loop
-SetLoopValues:
-	LOAD isPoint0
-	JPOS P1
-	LOAD Point0X
-	STORE curPointx;
-	LOAD Point0Y
-	STORE curPointy;
-	LOAD Point1X
-	STORE nextPointx;
-	LOAD Point1Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint0
-	LOADI 0
-	STORE isPoint1
-	RETURN
-P1:
-	LOAD isPoint1
-	JPOS P2
-	LOAD Point1X
-	STORE curPointx;
-	LOAD Point1Y
-	STORE curPointy;
-	LOAD Point2X
-	STORE nextPointx;
-	LOAD Point2Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint1
-	LOADI 0
-	STORE isPoint2
-	RETURN
-P2:
-	LOAD isPoint2
-	JPOS P3
-	LOAD Point2X
-	STORE curPointx;
-	LOAD Point2Y
-	STORE curPointy;
-	LOAD Point3X
-	STORE nextPointx;
-	LOAD Point3Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint2
-	LOADI 0
-	STORE isPoint3
-	RETURN
-P3:
-	LOAD isPoint3
-	JPOS P4
-	LOAD Point3X
-	STORE curPointx;
-	LOAD Point3Y
-	STORE curPointy;
-	LOAD Point4X
-	STORE nextPointx;
-	LOAD Point4Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint3
-	LOADI 0
-	STORE isPoint4
-	RETURN
-P4:
-	LOAD isPoint4
-	JPOS P5
-	LOAD Point4X
-	STORE curPointx;
-	LOAD Point4Y
-	STORE curPointy;
-	LOAD Point5X
-	STORE nextPointx;
-	LOAD Point5Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint4
-	LOADI 0
-	STORE isPoint5
-	RETURN
-P5:
-	LOAD isPoint5
-	JPOS P6
-	LOAD Point5X
-	STORE curPointx;
-	LOAD Point5Y
-	STORE curPointy;
-	LOAD Point6X
-	STORE nextPointx;
-	LOAD Point6Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint5
-	LOADI 0
-	STORE isPoint6
-	RETURN
-P6:
-	LOAD isPoint6
-	JPOS P7
-	LOAD Point6X
-	STORE curPointx;
-	LOAD Point6Y
-	STORE curPointy;
-	LOAD Point7X
-	STORE nextPointx;
-	LOAD Point7Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint6
-	LOADI 0
-	STORE isPoint7
-	RETURN
-P7:
-	LOAD isPoint7
-	JPOS P8
-	LOAD Point7X
-	STORE curPointx;
-	LOAD Point7Y
-	STORE curPointy;
-	LOAD Point8X
-	STORE nextPointx;
-	LOAD Point8Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint7
-	LOADI 0
-	STORE isPoint8
-	RETURN
-P8:
-	LOAD isPoint8
-	JPOS P9
-	LOAD Point8X
-	STORE curPointx
-	LOAD Point8Y
-	STORE curPointy
-	LOAD Point9X
-	STORE nextPointx
-	LOAD Point9Y
-	STORE nextPointy
-	LOADI 1
-	STORE isPoint8
-	LOADI 0
-	STORE isPoint9
-	RETURN
-P9:
-	LOAD isPoint9
-	JPOS P10
-	LOAD Point9X
-	STORE curPointx;
-	LOAD Point9Y
-	STORE curPointy;
-	LOAD Point10X
-	STORE nextPointx;
-	LOAD Point10Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint9
-	LOADI 0
-	STORE isPoint10
-	RETURN
-P10:
-	LOAD isPoint10
-	JPOS P11
-	LOAD Point10X
-	STORE curPointx;
-	LOAD Point10Y
-	STORE curPointy;
-	LOAD Point11X
-	STORE nextPointx;
-	LOAD Point11Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint10
-	LOADI 0
-	STORE isPoint11
-	RETURN
-P11:
-	LOAD isPoint11	
-	JPOS P12
-	LOAD Point11X
-	STORE curPointx;
-	LOAD Point11Y
-	STORE curPointy;
-	LOAD Point12X
-	STORE nextPointx;
-	LOAD Point12Y;
-	STORE nextPointy;
-	LOADI 1
-	STORE isPoint11
-	RETURN
-P12:
-	LOAD 1
-	STORE DONE
+  
+  JPOS Forward3
+  JUMP Forward2
+  
+ Forward3:		; Return
+ RETURN
+ 
+ 
+ 
+ TurnCW:     ; Turns clockwise to the value of CurrAngle 
+  LOADI -100 
+  OUT RVelCmd
+  LOADI 100
+  OUT LVelCmd
+  IN THETA
+  JZERO SkipIfZeroCW
+  SUB CurrAng     ;  should be between 
+  
+  JPOS Die
+ 
+SkipIfZeroCW:
+  JUMP TurnCW
+; Subroutine to wait (block) for 1 second
+Wait1:
+	OUT    TIMER
+Wloop:
+	IN     TIMER
+	ADDI   -10         ; 1 second in 10Hz.
+	JNEG   Wloop
 	RETURN
 
 ; Subroutine to wait the number of timer counts currently in AC
@@ -506,7 +303,7 @@ WACLoop:
 	JNEG   WACLoop
 	RETURN
 	WaitTime: DW 0     ; "local" variable.
-
+	
 ; This subroutine will get the battery voltage,
 ; and stop program execution if it is too low.
 ; SetupI2C must be executed prior to this.
@@ -530,13 +327,15 @@ DeadBatt:
 	ADDI   -1          ; 0xFFFF
 	OUT    LEDS        ; all LEDs on
 	OUT    XLEDS
+	CALL   Wait1       ; 1 second
 	Load   Zero
 	OUT    BEEP        ; stop beeping
 	LOAD   Zero
 	OUT    LEDS        ; LEDs off
 	OUT    XLEDS
+	CALL   Wait1       ; 1 second
 	JUMP   DeadBatt    ; repeat forever
-
+	
 ; Subroutine to read the A/D (battery voltage)
 ; Assumes that SetupI2C has been run
 GetBattLvl:
@@ -558,7 +357,7 @@ SetupI2C:
 	OUT    I2C_RDY     ; start the communication
 	CALL   BlockI2C    ; wait for it to finish
 	RETURN
-
+	
 ; Subroutine to block until I2C device is idle
 BlockI2C:
 	LOAD   Zero
@@ -650,7 +449,7 @@ IndicateDest:
 	RETURN
 	IDNumber: DW 0
 	IDFlag: DW 0
-
+	
 
 ; Timer interrupt, used to send position data to the server
 CTimer_ISR:
@@ -981,8 +780,6 @@ Mod180n:
 	JNEG   Mod180n
 	ADDI   -180         ; go back negative
 	RETURN
-
-
 ;*******************************************************************************
 ; Mod360: modulo 360
 ; Returns AC%360 in AC
@@ -1000,28 +797,6 @@ Mod360n:
 	JNEG   Mod360n
 	ADDI   -360         ; go back negative
 	RETURN
-
-;*******************************************************************************
-; PosModulo: modulo
-; Returns AC%ModuloD in AC
-; The modulo is strictly positive in the range 0, ModuloD-1
-;*******************************************************************************	
-PosModulo:
-  JZERO  PosModulo_bail
-	JNEG   PosModuloN      ; handle negatives
-PosModuloP:
-	SUB    PosModuloD
-	JPOS   PosModuloP      ; subtract until negative
-	ADD    PosModuloD      ; go back positive
-	RETURN
-PosModuloN:
-	ADD    PosModuloD      ; add until positive
-	JNEG   PosModuloN
-	RETURN
-PosModulo_bail:
-  RETURN
-
-PosModuloD: DW 0
 
 ;*******************************************************************************
 ; L2Estimate:  Pythagorean distance estimation
@@ -1087,7 +862,7 @@ L2Y:  DW 0
 L2T1: DW 0
 L2T2: DW 0
 L2T3: DW 0
-
+	
 ;***************************************************************
 ;* Variables
 ;***************************************************************
@@ -1101,90 +876,65 @@ CX:  DW 0      ; sampled X
 CY:  DW 0      ; sampled Y
 CT:  DW 0      ; sampled theta
 CurrDist:   DW 0      ; Current Distance
-OneFootLess: DW 0   ; One foot less than current dist
+OneFootLess: DW 0;   ; One foot less than current dist
+CurrAng:    DW 0      ; Current Angle
 OLDPOS:     DW 0      ; 
-
-DirAndAngTemp: DW 0
-DirAndAngDiff: DW 0
-DirectionToGo: DW 0
+thetaold: DW 0
+thetanew: DW 0
+amtTurned: DW 0
 AngleToGo: DW 0
-CurrAngle: DW 0
 
-curPointx: DW 0
-curPointy: DW 0
-nextPointx: DW 0
-nextPointy: DW 0
-
-isPoint0: DW 1
 Point0X: DW 0 
-Point0Y: DW 0
+Point0Y: DW 0 
 Point0R: DW 0
 
-isPoint1: DW 1
 Point1X: DW 2
-Point1Y: DW 1
+Point1Y: DW 2
 Point1R: DW 0
 
-isPoint2: DW 1
-Point2X: DW 1
-Point2Y: DW 2
-Point2R: DW 0
+Point2X: DW 4 
+Point2Y: DW 2 
+Point2R: DW 0 
 
-isPoint3: DW 1
-Point3X: DW 0
-Point3Y: DW 0 
+Point3X: DW 2 
+Point3Y: DW 2 
 Point3R: DW 0
 
-isPoint4: DW 1
-Point4X: DW 2
+Point4X: DW 1 
 Point4Y: DW 2 
 Point4R: DW 0
 
-isPoint5: DW 1
-Point5X: DW 1 
-Point5Y: DW 1 
+Point5X: DW 0 
+Point5Y: DW 0 
 Point5R: DW 0
 
-isPoint6: DW 1
 Point6X: DW 0 
 Point6Y: DW 0 
 Point6R: DW 0
 
-isPoint7: DW 1
 Point7X: DW 0 
 Point7Y: DW 0 
 Point7R: DW 0
 
-isPoint8: DW 1
 Point8X: DW 0 
 Point8Y: DW 0 
 Point8R: DW 0
 
-isPoint9: DW 1
 Point9X: DW 0 
-Point9Y: DW 0 
+Poiny9Y: DW 0 
 Point9R: DW 0
 
-isPoint10: DW 1
 Point10X: DW 0 
-Point10Y: DW 0 
+Poiny10Y: DW 0 
 Point10R: DW 0
 
-isPoint11: DW 1
 Point11X: DW 0 
-Point11Y: DW 0 
+Poiny11Y: DW 0 
 Point11R: DW 0
 
-isPoint12: DW 1   ; This is our STOPPING case
 Point12X: DW 0 
-Point12Y: DW 0 
+Poiny12Y: DW 0 
 Point12R: DW 0
-
-thetaold: DW 0
-thetanew: DW 0
-amtTurned: DW 0
-DONE: DW -1
-
 
 
 ;***************************************************************
@@ -1217,8 +967,6 @@ Mask6:    DW &B01000000
 Mask7:    DW &B10000000
 LowByte:  DW &HFF      ; binary 00000000 1111111
 LowNibl:  DW &HF       ; 0000 0000 0000 1111
-SignBit:  DW &H8000
-NOTSignBit: DW &H7FFF 
 
 ; some useful movement values
 OneMeter: DW 952       ; ~1m in 1.05mm units
