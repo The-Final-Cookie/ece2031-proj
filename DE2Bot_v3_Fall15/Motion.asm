@@ -99,8 +99,17 @@ Main: ; "Real" program starts here.
     STORE Offset
     CALL CopyPoint ; Now we have CurrentPoint and NextPoint setup
 
+    LOADI 1
+    OUT LCD
+
     CALL Rotate ; Rotate to the proper heading
+    LOADI 2
+    OUT LCD
+
     CALL Move   ; Move to the proper point
+    LOADI 3
+    OUT LCD
+
 
     ; Update and loop check
     LOAD Idx
@@ -212,10 +221,16 @@ RVelocity: DW 0
 Move:
   LOAD MoveDirection
   JPOS GoForward ; jump to going positive
+    LOADI 4
+    OUT LCD
+
     LOADI -511 ; Gotta go fast
     JUMP DoneWithDirection
   GoForward:
     LOADI 511
+    
+    LOADI 5
+    OUT LCD
 
   DoneWithDirection:
   STORE Velocity
