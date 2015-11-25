@@ -12,7 +12,8 @@ DirectionAndAngle:
   CALL PosModulo
   ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
   JNEG DirectionAndAngle_CCW
-  ADDI 90
+  ADDI -180
+  CALL Abs
   STORE AngleToGo
   LOADI 1
   STORE DirectionToGo
@@ -35,6 +36,18 @@ DirAndAngDiff: DW 0
 DirectionToGo: DW 0
 AngleToGo: DW 0
 CurrAngle: DW 0
+
+;*******************************************************************************
+; Abs: 2's complement absolute value
+; Returns abs(AC) in AC
+; Written by Kevin Johnson.  No licence or copyright applied.
+;*******************************************************************************
+Abs:
+	JPOS   Abs_r
+	XOR    NegOne       ; Flip all bits
+	ADDI   1            ; Add one (i.e. negate number)
+Abs_r:
+	RETURN
 
 ;*******************************************************************************
 ; PosModulo: modulo

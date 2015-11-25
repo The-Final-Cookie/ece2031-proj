@@ -40,7 +40,7 @@
   diff = ((CurrAngle - currentTheta) % 360) - 180
   if (diff > 0) {
     direction = 1 // clockwise
-    diff += 90
+    diff = 180 - diff
   } else {
     direction = 0 // counterclockwise
     diff = (currAngle - currentTheta) % 360
