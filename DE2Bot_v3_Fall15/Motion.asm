@@ -520,6 +520,7 @@ DebugOutPoint:
   ADDI 1
   STORE Offset
   OUT LCD
+  RETURN
 
 ; Sets the point at AC to (0, 0, 0)
 ClearPoint:
