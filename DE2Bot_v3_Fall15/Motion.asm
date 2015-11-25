@@ -98,6 +98,12 @@ Main: ; "Real" program starts here.
     STORE Offset
     CALL CopyPoint ; Now we have CurrentPoint and NextPoint setup
 
+    ; Now let's output the nextpoint and wait so I can actually see it
+    LOADI NextPoint
+    CALL DebugOutPoint
+    LOADI 10
+    CALL WaitAC
+
     CALL Rotate ; Rotate to the proper heading
     CALL Move   ; Move to the proper point
 
@@ -114,12 +120,6 @@ Main: ; "Real" program starts here.
     LOADI CurrentPoint
     STORE OffsetTo
     CALL CopyPoint
-
-    ; Now let's output the nextpoint and wait so I can actually see it
-    LOADI NextPoint
-    CALL DebugOutPoint
-    LOADI 10
-    CALL WaitAC
 
     ; Update and loop check
     LOAD Idx
@@ -235,15 +235,9 @@ RVelocity: DW 0
 Move:
   LOAD MoveDirection
   JPOS GoForward ; jump to going positive
-    LOADI 4
-    OUT LCD
-
     LOADI -511 ; Gotta go fast
     JUMP DoneWithDirection
   GoForward:
-    LOADI 5
-    OUT LCD
-
     LOADI 511
 
   DoneWithDirection:
@@ -297,7 +291,6 @@ Move:
     OUT RVELCMD
 
     IN LPOS
-    OUT LCD
     STORE Mean2Arg
     IN RPOS
     CALL Mean2
