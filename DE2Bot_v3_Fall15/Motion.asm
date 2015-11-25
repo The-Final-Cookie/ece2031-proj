@@ -231,10 +231,10 @@ Move:
     LOADI -511 ; Gotta go fast
     JUMP DoneWithDirection
   GoForward:
-    LOADI 511
-    
     LOADI 5
     OUT LCD
+
+    LOADI 511
 
   DoneWithDirection:
   STORE Velocity

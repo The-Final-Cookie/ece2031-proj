@@ -157,9 +157,9 @@ CONTENT
            090 : 9806;  --     OUT LCD
            091 : BE01;  --     LOADI -511 ; Gotta go fast
            092 : 2896;  --     JUMP DoneWithDirection
-           093 : B9FF;  --     LOADI 511
-           094 : B805;  --     LOADI 5
-           095 : 9806;  --     OUT LCD
+           093 : B805;  --     LOADI 5
+           094 : 9806;  --     OUT LCD
+           095 : B9FF;  --     LOADI 511
            096 : 10D2;  --   STORE Velocity
            097 : 9883;  --   OUT LVELCMD
            098 : 988B;  --   OUT RVELCMD
