@@ -91,7 +91,7 @@ Main: ; "Real" program starts here.
   MainLoopTop:
     LOADI NextPoint
     STORE OffsetTo
-    LOADI RealOutPoints
+    LOADI OutPoints
     ADD Idx ; need to add Idx 3 times, because each point is 3 wide
     ADD Idx
     ADD Idx
@@ -508,10 +508,12 @@ DebugOutPoint:
   LOAD Offset
   ADDI 1
   STORE Offset
+  ILOAD Offset
   OUT SSEG2
   LOAD Offset
   ADDI 1
   STORE Offset
+  ILOAD Offset
   OUT LCD
   RETURN
 
@@ -690,7 +692,7 @@ StartSort:
     ; Copy the current best point to our index
     LOADI BestPoint
     STORE Offset
-    LOADI RealOutPoints
+    LOADI OutPoints
     ADD Idx
     ADD Idx
     ADD Idx
@@ -1622,10 +1624,6 @@ MemoryDumpMarker2:
   DW &H4141
 
 OutPoints:
-  DW 0 ; Entry 00 x
-  DW 0 ; Entry 00 y
-  DW 0 ; Entry 00 count
-RealOutPoints:
   DW 0 ; Entry 01 x
   DW 0 ; Entry 01 y
   DW 0 ; Entry 01 count
