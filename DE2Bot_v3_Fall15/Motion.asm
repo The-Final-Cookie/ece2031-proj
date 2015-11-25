@@ -268,6 +268,7 @@ Move:
   ; All of that is done in Rotate
   ; So everything should be setup to call L2Estimate
 
+  ; TODO need to change this to allow backwards movement
   CALL L2Estimate
   STORE FullDistance
 
@@ -303,6 +304,7 @@ Move:
     LOAD FullDistance
     SUB DistanceTraveled ; How far we have left
     STORE DistanceLeft
+    OUT SSEG1
 
     CALL CalcDecDist ; deceleration distance
     SUB DistanceLeft
