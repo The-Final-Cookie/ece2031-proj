@@ -187,13 +187,20 @@ Move:
     JPOS DecelerationWait
     JNEG DecelerationWait
 
-  ; we're at our point! indicate the destination and return
+  ; we're at our point! indicate the destination and update our CurrentPoint
   LOADI NextPoint
   ADDI 2 ; count
   STORE Offset
   ILOAD Offset
   CALL IndicateDest
 
+  LOADI NextPoint
+  STORE Offset
+  LOADI CurrentPoint
+  STORE OffsetTo
+  CALL CopyPoint
+
+  ; and return, phew!
   RETURN 
 DifferencePoint:
   DW 0 ; x
