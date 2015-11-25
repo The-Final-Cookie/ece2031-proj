@@ -4,12 +4,12 @@
 
 DirectionAndAngle:
   LOADI 360
-  STORE ModuloD
+  STORE PosModuloD
   IN THETA
   STORE DirAndAngTemp
   LOAD CurrAngle
   SUB DirAndAngTemp
-  CALL Modulo
+  CALL PosModulo
   ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
   JNEG DirectionAndAngle_CCW
   ADDI 90
@@ -36,26 +36,25 @@ AngleToGo: DW 0
 CurrAngle: DW 0
 
 ;*******************************************************************************
-; Modulo: modulo
+; PosModulo: modulo
 ; Returns AC%ModuloD in AC
-; Written by Kevin Johnson.  No licence or copyright applied.
+; The modulo is strictly positive in the range 0, ModuloD-1
 ;*******************************************************************************	
-Modulo:
-  JZERO  Modulo_bail
-	JNEG   ModuloN      ; handle negatives
-ModuloP:
-	ADD    ModuloD
-	JPOS   ModuloP      ; subtract until negative
-	ADD    ModuloD      ; go back positive
+PosModulo:
+  JZERO  PosModulo_bail
+	JNEG   PosModuloN      ; handle negatives
+PosModuloP:
+	SUB    PosModuloD
+	JPOS   PosModuloP      ; subtract until negative
+	ADD    PosModuloD      ; go back positive
 	RETURN
-ModuloN:
-	ADDI   ModuloD      ; add until positive
-	JNEG   ModuloN
-	ADDI   ModuloD      ; go back negative
+PosModuloN:
+	ADD    PosModuloD      ; add until positive
+	JNEG   PosModuloN
 	RETURN
-Modulo_bail:
+PosModulo_bail:
   RETURN
 
-ModuloD: DW 0
+PosModuloD: DW 0
 
 THETA:    EQU &HC2  ; Current rotational position of robot (0-359)
