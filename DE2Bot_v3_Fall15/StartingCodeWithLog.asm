@@ -109,6 +109,7 @@ Loop:
 	JPOS DontAdjust
 	ADDI 360
 	STORE CurrAngle
+	OUT LCD
 	DontAdjust:
 	CALL   L2Estimate ; estimate the distance
 	STORE  CurrDist
@@ -186,22 +187,33 @@ DirectionAndAngle:
   STORE AngleToGo
   RETURN
 
+  
 
 
 ; Turning clockwise and move forward
 
  TurnCW: 
+  LOADI 0
+  STORE amtTurned
+ 
+ TurnCWLoop:
+  IN THETA
+  LOAD thetaold
   LOADI -100 
   OUT RVelCmd
   LOADI 100
   OUT LVelCmd
   IN THETA
-  JPOS waitCW
-  SUB CurrAngle      ; should be between 0 and 179   ( 180 
+  LOAD thetanew
+  SUB thetaold
+  CALL Mod360
+  ADD amtTurned
+  STORE amtTurned
   SUB AngleToGo
-  OUT LCD
-  JNEG CWWaiting			; Change this to a appropriate jump later
-waitCW: JUMP TurnCW
+  JPOS CWWaiting
+  
+			; Change this to a appropriate jump later
+waitCW: JUMP TurnCWLoop
 
  CWWaiting:
  LOADI 0
@@ -243,18 +255,28 @@ CWForward3: RETURN
 ; Turning counter-clockwise and move forward
 
  
- TurnCCW: 
+TurnCCW: 
+  LOADI 0
+  STORE amtTurned
+ 
+ TurnCCWLoop: 
+  IN THETA
+  LOAD thetaold
   LOADI 100 
   OUT RVelCmd
   LOADI -100
   OUT LVelCmd
   IN THETA
-  JNEG waitCCW
-  SUB CurrAngle     ; should be between 0 and 179   ( 180 
-  ADD AngleToGo
-  OUT LCD
-  JPOS CCWWaiting			; Change this to a appropriate jump later
-waitCCW: JUMP TurnCCW
+  LOAD thetanew
+  LOAD thetanew
+  SUB thetaold
+  CALL Mod360
+  ADD amtTurned
+  STORE amtTurned
+  SUB AngleToGo
+  JPOS CCWWaiting
+ 
+waitCCW: JUMP TurnCCWLoop
 
  CCWWaiting:
  LOADI 0
