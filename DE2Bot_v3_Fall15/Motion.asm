@@ -87,7 +87,6 @@ Main: ; "Real" program starts here.
 
   ; Setup loop
   STORE Idx ; AC contains 0 after ClearPoint
-  OUT SSEG1
 
   MainLoopTop:
     LOADI NextPoint
@@ -115,7 +114,6 @@ Main: ; "Real" program starts here.
     LOAD Idx
     ADDI 1
     STORE Idx
-    OUT SSEG1
     ADDI -12
     JNEG MainLoopTop
 
@@ -319,6 +317,7 @@ Move:
     STORE Mean2Arg
     IN RVEL
     CALL Mean2
+    OUT SSEG2
     JPOS DecelerationWait
     JNEG DecelerationWait
 
@@ -327,7 +326,6 @@ Move:
   ADDI 2 ; count
   STORE Offset
   ILOAD Offset
-  OUT SSEG2
   CALL IndicateDest
 
   LOADI NextPoint
