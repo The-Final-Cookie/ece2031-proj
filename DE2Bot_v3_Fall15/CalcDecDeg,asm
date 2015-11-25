@@ -1,0 +1,10 @@
+// Given current speed and deceleration, calculate the angle in radians robot turns during deceleration.
+CalcDecDeg: CALL CalcDecDist
+	SHIFT 1    ; turning twice faster
+	STORE d16sN
+	LOADI 113  ; 238 mm / (1.05 mm/robot unit)
+	STORE d16sD
+	CALL Div16s
+	STORE DecDeg  ; in radians
+
+DecDeg: DW 0
