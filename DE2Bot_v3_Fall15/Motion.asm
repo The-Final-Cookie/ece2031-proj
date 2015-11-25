@@ -79,9 +79,10 @@ Main: ; "Real" program starts here.
   ; You will probably want to reset the position at the start your project code:
   OUT RESETPOS    ; reset odometer in case wheels moved after programming
   CALL UARTClear  ; empty the UART receive FIFO of any old data
+
   CALL PathFind   ; sort the points
 
-  ; Clear the current point (previously by PathFind)
+  ; Clear the current point (previously used by PathFind)
   LOADI CurrentPoint
   CALL ClearPoint
 
@@ -97,12 +98,6 @@ Main: ; "Real" program starts here.
     ADD Idx
     STORE Offset
     CALL CopyPoint ; Now we have CurrentPoint and NextPoint setup
-
-    ; Now let's output the nextpoint and wait so I can actually see it
-    LOADI NextPoint
-    CALL DebugOutPoint
-    LOADI 10
-    CALL WaitAC
 
     CALL Rotate ; Rotate to the proper heading
     CALL Move   ; Move to the proper point
@@ -275,20 +270,21 @@ Move:
   ; TODO need to change this to allow backwards movement
   CALL L2Estimate
   STORE FullDistance
-
-  LOADI DifferencePoint
-  CALL DebugOutPoint
-  LOADI 10
-  CALL WaitAC
+  OUT LCD
 
   IN LPOS
   STORE Mean2Arg
   IN RPOS
   CALL Mean2
   STORE DistanceTraveled
+  OUT SSEG1
 
   ADD FullDistance
   STORE FullDistance ; this is what LPOS and RPOS ought to say
+  OUT SSEG2
+
+  LOADI 10
+  CALL WaitAC
 
   FullSpeedWait: ; Loop while waiting for us to cut power
     LOAD Velocity

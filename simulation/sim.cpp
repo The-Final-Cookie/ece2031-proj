@@ -28,14 +28,8 @@ int main(int argc, char** argv) {
   SComp scomp(mifData, isCode);
   do {
     scomp.stepInstruction();
-    if (scomp.getPC() > 0xBB &&
-        scomp.getPC() <= 0xC7) {
-      scomp.setDebug(true);
-    } else {
-      scomp.setDebug(false);
-    }
-
-  } while(!scomp.getXLeds());
+    scomp.setDebug(true);
+  } while(scomp.getSevenSeg2() != 0xDEAD);
 
   auto omg = scomp.getMemory();
   
