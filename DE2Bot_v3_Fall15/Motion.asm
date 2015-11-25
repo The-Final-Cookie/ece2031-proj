@@ -945,8 +945,8 @@ BI2CL:
 I2CError:
   LOAD   Zero
   ADDI   &H12C       ; "I2C"
-  OUT    SSEG1
-  OUT    SSEG2       ; display error message
+  ;OUT    SSEG1
+  ;OUT    SSEG2       ; display error message
   JUMP   I2CError
 
 ; Subroutines to send AC value through the UART,
