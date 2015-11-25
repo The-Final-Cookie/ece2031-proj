@@ -31,3 +31,18 @@
   ydiff = currentPoint[1] - points[i][1]
   cost = pyth(a, b) + mod(atan2(ydiff, xdiff) - theta, pi/2) * 113 // 227 is axle_track radius in robounits
 }
+
+{
+  // CurrAngle = atan2(destY - Y, destX - X)
+  // Theta 
+
+  currentTheta = IN THETA
+  diff = ((CurrAngle - currentTheta) % 360) - 180
+  if (diff > 0) {
+    direction = 1 // clockwise
+    diff += 90
+  } else {
+    direction = 0 // counterclockwise
+    diff = currAngle - currentTheta
+  }
+}
