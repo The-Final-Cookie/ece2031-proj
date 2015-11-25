@@ -195,7 +195,7 @@ CONTENT
            0B6 : 80E5;  --   CALL L2Estimate
            0B7 : 10DA;  --   STORE ThisCost
            0B8 : B801;  --   LOADI 1
-           0B9 : 11FA;  --   STORE A2retrad
+           0B9 : 11FA;  --   STORE A2retrad ; we only want radians (with 8 fractional bits)
            0BA : B992;  --   LOADI 402 ; pi/2 with 8 fractional bits
            0BB : 118E;  --   STORE PosModuloD
            0BC : 818F;  --   CALL Atan2

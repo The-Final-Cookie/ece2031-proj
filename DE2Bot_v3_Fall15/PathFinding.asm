@@ -270,6 +270,7 @@ CalculateCost:
 
   CALL Mult16s ; 113 * fmod(atan2(ydiff, xdiff) - theta, pi/2)
                ; The angle cost of the point
+               ; 113 half of the axel length (radius)
 
   ; LOAD mres16sL ; already loaded!
   SHIFT -7

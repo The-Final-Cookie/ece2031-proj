@@ -25,7 +25,7 @@
 ORG        &H000       ; Jump table is located in mem 0-4
 	JUMP   Init        ; Reset vector
 	JUMP   CTimer_ISR  ; Timer interrupt
-	
+
 ;***************************************************************
 ;* Initialization
 ;***************************************************************
@@ -37,7 +37,7 @@ Init:
 	OUT    RVELCMD
 	OUT    SONAREN     ; Disable sonar (optional)
 	OUT    BEEP        ; Stop any beeping
-	
+
 	CALL   SetupI2C    ; Configure the I2C to read the battery voltage
 	CALL   BattCheck   ; Get battery voltage (and end if too low).
 	OUT    LCD         ; Display batt voltage on LCD
@@ -52,7 +52,7 @@ WaitForSafety:
 	SHIFT  8           ; Shift over to LED17
 	OUT    XLEDS       ; LED17 blinks at 2.5Hz (10Hz/4)
 	JUMP   WaitForSafety
-	
+
 WaitForUser:
 	; Wait for user to press PB3
 	IN     TIMER       ; We'll blink the LEDs above PB3
@@ -68,21 +68,21 @@ WaitForUser:
 	LOAD   Zero
 	OUT    XLEDS       ; clear LEDs once ready to continue
 	JUMP   Main
-	
+
 ;***************************************************************
 ;* Main code
 ;***************************************************************
 
 Main:
   OUT RESETPOS
-  
-  	LOADI 0
+
+  LOADI 0
 	STORE isPoint0
 Loop:  
 	LOAD done;
 	JPOS Die;
 	CALL SetLoopValues
-	
+
 	;now we have generic values that are stored in 
 	;curPointx, curPointy, nextPointx, nextPointy
 
@@ -115,7 +115,7 @@ Loop:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	
+
 	CALL DirectionAndAngle
 	LOAD DirectionToGo
 	OUT LCD
@@ -125,13 +125,7 @@ Loop:
 				JUMP Loop
 	callTurnCCW: CALL TurnCCW
 				 JUMP Loop
-	
 
-
-  
- 
-
-  
 Die:
 ; Sometimes it's useful to permanently stop execution.
 ; This will also catch the execution if it accidentally
@@ -141,16 +135,11 @@ Die:
 	OUT    RVELCMD
 	OUT    SONAREN
 	LOAD   DEAD         ; An indication that we are dead
-	
+
 Forever:
 	JUMP   Forever      ; Do this forever.
 	DEAD:  DW &HDEAD    ; Example of a "local" variable
 
-
-
-
-
-	
 ;***************************************************************
 ;* Subroutines
 ;***************************************************************
@@ -187,9 +176,6 @@ DirectionAndAngle:
   STORE AngleToGo
   RETURN
 
-  
-
-
 ; Turning clockwise and move forward
 
  TurnCW: 
@@ -223,7 +209,7 @@ waitCW: JUMP TurnCWLoop
  JNEG CWWaiting
  IN LPOS
  STORE OLDPOS
- 
+
  CWForward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
   LOADI 1023
   OUT LEDS
@@ -249,12 +235,11 @@ CWForward2: ; Move forward the remaining foot
   SUB CurrDist
   JPOS CWForward3
   JUMP CWForward2
- 
+
 CWForward3: RETURN
 
 ; Turning counter-clockwise and move forward
 
- 
 TurnCCW: 
   LOADI 0
   STORE amtTurned
@@ -286,7 +271,7 @@ waitCCW: JUMP TurnCCWLoop
  JNEG CCWWaiting
  IN LPOS
  STORE OLDPOS
- 
+
  CCWForward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
   LOADI 1023
   OUT LEDS
@@ -312,12 +297,8 @@ CCWForward2: ; Move forward the remaining foot
   SUB CurrDist
   JPOS CCWForward3
   JUMP CCWForward2
-  
+
 CCWForward3: RETURN
- 
-
-
- 
 
 ;Change current x and y to match loop
 SetLoopValues:
@@ -514,18 +495,7 @@ P12:
 	LOAD 1
 	STORE DONE
 	RETURN
-	
-	
-	
-	
 
-
-
-
-
-	
-	
-	
 ; Subroutine to wait the number of timer counts currently in AC
 WaitAC:
 	STORE  WaitTime
@@ -536,7 +506,7 @@ WACLoop:
 	JNEG   WACLoop
 	RETURN
 	WaitTime: DW 0     ; "local" variable.
-	
+
 ; This subroutine will get the battery voltage,
 ; and stop program execution if it is too low.
 ; SetupI2C must be executed prior to this.
@@ -566,7 +536,7 @@ DeadBatt:
 	OUT    LEDS        ; LEDs off
 	OUT    XLEDS
 	JUMP   DeadBatt    ; repeat forever
-	
+
 ; Subroutine to read the A/D (battery voltage)
 ; Assumes that SetupI2C has been run
 GetBattLvl:
@@ -588,7 +558,7 @@ SetupI2C:
 	OUT    I2C_RDY     ; start the communication
 	CALL   BlockI2C    ; wait for it to finish
 	RETURN
-	
+
 ; Subroutine to block until I2C device is idle
 BlockI2C:
 	LOAD   Zero
@@ -680,7 +650,7 @@ IndicateDest:
 	RETURN
 	IDNumber: DW 0
 	IDFlag: DW 0
-	
+
 
 ; Timer interrupt, used to send position data to the server
 CTimer_ISR:
@@ -1012,7 +982,7 @@ Mod180n:
 	ADDI   -180         ; go back negative
 	RETURN
 
-	
+
 ;*******************************************************************************
 ; Mod360: modulo 360
 ; Returns AC%360 in AC
@@ -1052,7 +1022,7 @@ PosModulo_bail:
   RETURN
 
 PosModuloD: DW 0
-	
+
 ;*******************************************************************************
 ; L2Estimate:  Pythagorean distance estimation
 ; Written by Kevin Johnson.  No licence or copyright applied.
@@ -1117,7 +1087,7 @@ L2Y:  DW 0
 L2T1: DW 0
 L2T2: DW 0
 L2T3: DW 0
-	
+
 ;***************************************************************
 ;* Variables
 ;***************************************************************
