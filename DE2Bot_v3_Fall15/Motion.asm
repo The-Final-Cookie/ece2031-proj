@@ -113,18 +113,13 @@ Main: ; "Real" program starts here.
 
 Rotate:
 
-  RETURN
-
-Move:
-  LOADI 511 ; Gotta go fast
-  OUT LVELCMD
-  OUT RVELCMD
-
+  RETURN ; Stubbed during implementation
   ; Now let's figure out how far we need to go
   LOAD NextPoint
   SUB CurrentPoint
   STORE DifferencePoint
-  STORE L2X
+  STORE L2X ; Do this here, so it's ready when Move uses it
+  STORE AtanX
 
   LOADI NextPoint ; NextPoint y
   ADDI 1
@@ -142,7 +137,93 @@ Move:
   STORE OffsetTo
   LOAD Temp
   ISTORE OffsetTo
-  STORE L2Y
+  STORE L2Y ; Do this here, so it's ready when Move uses it
+  STORE AtanY
+
+  LOADI 360
+  STORE PosModuloD
+
+  CALL Atan2
+  STORE DestHeading
+  IN THETA
+  STORE CurrentHeading
+
+  LOAD DestHeading
+  SUB CurrentHeading
+  CALL PosModulo
+  ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
+  JNEG DirectionAndAngle_CCW
+  ADDI 180
+  STORE AngleToGo
+  LOADI 1
+  STORE AngleDirection
+
+  ; TODO enable backwards movement
+  LOADI 1
+  STORE MoveDirection
+  RETURN
+
+  DirectionAndAngle_CCW:
+  LOADI 0
+  STORE AngleDirection
+  IN THETA
+  STORE CurrentHeading
+  LOAD DestHeading
+  SUB CurrentHeading
+  CALL PosModulo ; %360
+  STORE AngleToGo
+
+  ; TODO enable backwards movement
+  LOADI 1
+  STORE MoveDirection
+
+  RETURN
+
+MoveDirection: DW 0 ; 1 is forward, 0 is backward
+AngleDirection: DW 0 ; 1 is CCW, 0 is CW
+AngleToGo: DW 0
+DestHeading: DW 0
+CurrentHeading: DW 0
+
+Move:
+  LOAD MoveDirection
+  JPOS GoForward ; jump to going positive
+    LOADI -511 ; Gotta go fast
+    JUMP DoneWithDirection
+  GoForward:
+    LOADI 511
+
+  DoneWithDirection:
+  STORE Velocity
+  OUT LVELCMD
+  OUT RVELCMD
+
+  ;; Now let's figure out how far we need to go
+  ;LOAD NextPoint
+  ;SUB CurrentPoint
+  ;STORE DifferencePoint
+  ;STORE L2X
+
+  ;LOADI NextPoint ; NextPoint y
+  ;ADDI 1
+  ;STORE Offset
+  ;LOADI CurrentPoint ; CurrentPoint y
+  ;ADDI 1
+  ;STORE OffsetTo
+  ;ILOAD OffsetTo
+  ;STORE Temp
+  ;ILOAD Offset
+  ;SUB Temp
+  ;STORE Temp ; nextY - currY
+  ;LOADI DifferencePoint
+  ;ADDI 1
+  ;STORE OffsetTo
+  ;LOAD Temp
+  ;ISTORE OffsetTo
+  ;STORE L2Y
+
+  ; All of that is done in Rotate
+  ; So everything should be setup to call L2Estimate
 
   CALL L2Estimate
   STORE FullDistance
@@ -157,7 +238,7 @@ Move:
   STORE FullDistance ; this is what LPOS and RPOS ought to say
 
   FullSpeedWait: ; Loop while waiting for us to cut power
-    LOADI 511 ; Gotta go fast
+    LOAD Velocity
     OUT LVELCMD
     OUT RVELCMD
 
@@ -210,6 +291,8 @@ FullDistance:
 DistanceTraveled:
   DW 0
 DistanceLeft:
+  DW 0
+Velocity:
   DW 0
 
 ; This table is used in example 1.  Remember: DW puts these
@@ -1408,7 +1491,7 @@ Points:
   DW -4 ; Entry 11 x
   DW -6 ; Entry 11 y
 
-MemoryDumpMarker:
+MemoryDumpMarker1:
   DW &H4141
   DW &H4141
   DW &H4141
