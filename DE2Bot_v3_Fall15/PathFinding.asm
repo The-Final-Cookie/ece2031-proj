@@ -248,23 +248,21 @@ CalculateCost:
   CALL L2Estimate
   STORE ThisCost
 
-  RETURN ; skip theta calc TODO FIX THIS
-
   LOADI 1
   STORE A2retrad
   LOADI 402 ; pi/2 with 8 fractional bits
-  STORE ModuloD
+  STORE PosModuloD
 
   CALL Atan2
   SUB HeadingTheta
   STORE TempTheta
-  CALL Modulo ; mod pi/2
+  CALL PosModulo ; mod pi/2
   STORE m16sA
 
   LOAD TwoPi
-  STORE ModuloD
+  STORE PosModuloD
   LOAD TempTheta
-  CALL Modulo
+  CALL PosModulo
   STORE TempTheta
 
   LOADI 113 ; the axle track radius in robot units
@@ -534,27 +532,26 @@ Mod180n:
 	RETURN
 
 ;*******************************************************************************
-; Modulo: modulo
+; PosModulo: modulo
 ; Returns AC%ModuloD in AC
-; Written by Kevin Johnson.  No licence or copyright applied.
+; The modulo is strictly positive in the range 0, ModuloD-1
 ;*******************************************************************************	
-Modulo:
-  JZERO  Modulo_bail
-	JNEG   ModuloN      ; handle negatives
-ModuloP:
-	ADD    ModuloD
-	JPOS   ModuloP      ; subtract until negative
-	ADD    ModuloD      ; go back positive
+PosModulo:
+  JZERO  PosModulo_bail
+	JNEG   PosModuloN      ; handle negatives
+PosModuloP:
+	SUB    PosModuloD
+	JPOS   PosModuloP      ; subtract until negative
+	ADD    PosModuloD      ; go back positive
 	RETURN
-ModuloN:
-	ADDI   ModuloD      ; add until positive
-	JNEG   ModuloN
-	ADDI   ModuloD      ; go back negative
+PosModuloN:
+	ADD    PosModuloD      ; add until positive
+	JNEG   PosModuloN
 	RETURN
-Modulo_bail:
+PosModulo_bail:
   RETURN
 
-ModuloD: DW 0
+PosModuloD: DW 0
 
 ;******************************************************************************;
 ; Atan2: 4-quadrant arctangent calculation                                     ;
