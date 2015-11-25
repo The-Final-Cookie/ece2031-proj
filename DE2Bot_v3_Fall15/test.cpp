@@ -43,6 +43,6 @@
     diff += 90
   } else {
     direction = 0 // counterclockwise
-    diff = currAngle - currentTheta
+    diff = (currAngle - currentTheta) % 360
   }
 }

@@ -25,6 +25,7 @@ DirectionAndAngle:
   STORE DirAndAngTemp
   LOAD CurrAngle
   SUB DirAndAngTemp
+  CALL PosModulo ; %360
   STORE AngleToGo
   RETURN
 

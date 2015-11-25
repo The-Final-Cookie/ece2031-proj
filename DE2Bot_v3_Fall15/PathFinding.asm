@@ -249,7 +249,7 @@ CalculateCost:
   STORE ThisCost
 
   LOADI 1
-  STORE A2retrad
+  STORE A2retrad ; we only want radians (with 8 fractional bits)
   LOADI 402 ; pi/2 with 8 fractional bits
   STORE PosModuloD
 

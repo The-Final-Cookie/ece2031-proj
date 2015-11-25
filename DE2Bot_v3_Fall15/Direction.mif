@@ -11,41 +11,42 @@ CONTENT
     [000..7FF] : 0000;  -- Default to NOP
 
            000 : B968;  --   LOADI 360
-           001 : 1025;  --   STORE PosModuloD
+           001 : 1026;  --   STORE PosModuloD
            002 : 90C2;  --   IN THETA
-           003 : 1016;  --   STORE DirAndAngTemp
-           004 : 081A;  --   LOAD CurrAngle
-           005 : 2016;  --   SUB DirAndAngTemp
-           006 : 801B;  --   CALL PosModulo
+           003 : 1017;  --   STORE DirAndAngTemp
+           004 : 081B;  --   LOAD CurrAngle
+           005 : 2017;  --   SUB DirAndAngTemp
+           006 : 801C;  --   CALL PosModulo
            007 : 6F4C;  --   ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
            008 : 300E;  --   JNEG DirectionAndAngle_CCW
            009 : 685A;  --   ADDI 90
-           00A : 1019;  --   STORE AngleToGo
+           00A : 101A;  --   STORE AngleToGo
            00B : B801;  --   LOADI 1
-           00C : 1018;  --   STORE DirectionToGo
+           00C : 1019;  --   STORE DirectionToGo
            00D : 8800;  --   RETURN
            00E : B800;  --   LOADI 0
-           00F : 1018;  --   STORE DirectionToGo
+           00F : 1019;  --   STORE DirectionToGo
            010 : 90C2;  --   IN THETA
-           011 : 1016;  --   STORE DirAndAngTemp
-           012 : 081A;  --   LOAD CurrAngle
-           013 : 2016;  --   SUB DirAndAngTemp
-           014 : 1019;  --   STORE AngleToGo
-           015 : 8800;  --   RETURN
-           016 : 0000;  -- DirAndAngTemp: DW 0
-           017 : 0000;  -- DirAndAngDiff: DW 0
-           018 : 0000;  -- DirectionToGo: DW 0
-           019 : 0000;  -- AngleToGo: DW 0
-           01A : 0000;  -- CurrAngle: DW 0
-           01B : 4024;  --   JZERO  PosModulo_bail
-           01C : 3021;  -- 	JNEG   PosModuloN      ; handle negatives
-           01D : 2025;  -- 	SUB    PosModuloD
-           01E : 381D;  -- 	JPOS   PosModuloP      ; subtract until negative
-           01F : 1825;  -- 	ADD    PosModuloD      ; go back positive
-           020 : 8800;  -- 	RETURN
-           021 : 1825;  -- 	ADD    PosModuloD      ; add until positive
-           022 : 3021;  -- 	JNEG   PosModuloN
-           023 : 8800;  -- 	RETURN
-           024 : 8800;  --   RETURN
-           025 : 0000;  -- PosModuloD: DW 0
+           011 : 1017;  --   STORE DirAndAngTemp
+           012 : 081B;  --   LOAD CurrAngle
+           013 : 2017;  --   SUB DirAndAngTemp
+           014 : 801C;  --   CALL PosModulo ; %360
+           015 : 101A;  --   STORE AngleToGo
+           016 : 8800;  --   RETURN
+           017 : 0000;  -- DirAndAngTemp: DW 0
+           018 : 0000;  -- DirAndAngDiff: DW 0
+           019 : 0000;  -- DirectionToGo: DW 0
+           01A : 0000;  -- AngleToGo: DW 0
+           01B : 0000;  -- CurrAngle: DW 0
+           01C : 4025;  --   JZERO  PosModulo_bail
+           01D : 3022;  -- 	JNEG   PosModuloN      ; handle negatives
+           01E : 2026;  -- 	SUB    PosModuloD
+           01F : 381E;  -- 	JPOS   PosModuloP      ; subtract until negative
+           020 : 1826;  -- 	ADD    PosModuloD      ; go back positive
+           021 : 8800;  -- 	RETURN
+           022 : 1826;  -- 	ADD    PosModuloD      ; add until positive
+           023 : 3022;  -- 	JNEG   PosModuloN
+           024 : 8800;  -- 	RETURN
+           025 : 8800;  --   RETURN
+           026 : 0000;  -- PosModuloD: DW 0
   END;
