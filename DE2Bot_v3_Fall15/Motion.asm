@@ -123,7 +123,11 @@ Main: ; "Real" program starts here.
   JUMP Die
 
 Rotate:
+
+  LOADI 1
+  STORE MoveDirection
   RETURN ; stubbed during debugging
+
   ; Now let's figure out how far we need to go
   LOAD NextPoint
   SUB CurrentPoint
@@ -275,6 +279,8 @@ Move:
 
   ADD FullDistance
   STORE FullDistance ; this is what LPOS and RPOS ought to say
+  LOADI 0
+  STORE LoopTimes
 
   FullSpeedWait: ; Loop while waiting for us to cut power
     LOAD Velocity
@@ -282,6 +288,10 @@ Move:
     OUT RVELCMD
 
     LOADI 4
+    OUT LEDS
+    LOAD LoopTimes
+    ADDI 1
+    STORE LoopTimes
     OUT LEDS
 
     IN LPOS
@@ -336,6 +346,8 @@ DistanceTraveled:
 DistanceLeft:
   DW 0
 Velocity:
+  DW 0
+LoopTimes:
   DW 0
 
 ; This table is used in example 1.  Remember: DW puts these
