@@ -163,14 +163,14 @@ CONTENT
            096 : 988B;  --   OUT RVELCMD
            097 : 834C;  --   CALL L2Estimate
            098 : 10C6;  --   STORE FullDistance
-           099 : 9804;  --   OUT SSEG1
-           09A : 9080;  --   IN LPOS
-           09B : 1331;  --   STORE Mean2Arg
-           09C : 9088;  --   IN RPOS
-           09D : 832B;  --   CALL Mean2
-           09E : 10C7;  --   STORE DistanceTraveled
-           09F : 18C6;  --   ADD FullDistance
-           0A0 : 10C6;  --   STORE FullDistance ; this is what LPOS and RPOS ought to say
+           099 : 9080;  --   IN LPOS
+           09A : 1331;  --   STORE Mean2Arg
+           09B : 9088;  --   IN RPOS
+           09C : 832B;  --   CALL Mean2
+           09D : 10C7;  --   STORE DistanceTraveled
+           09E : 18C6;  --   ADD FullDistance
+           09F : 10C6;  --   STORE FullDistance ; this is what LPOS and RPOS ought to say
+           0A0 : 9804;  --   OUT SSEG1
            0A1 : 08C9;  --     LOAD Velocity
            0A2 : 9883;  --     OUT LVELCMD
            0A3 : 988B;  --     OUT RVELCMD

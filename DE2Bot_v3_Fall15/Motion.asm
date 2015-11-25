@@ -270,7 +270,6 @@ Move:
   ; TODO need to change this to allow backwards movement
   CALL L2Estimate
   STORE FullDistance
-  OUT SSEG1
 
   IN LPOS
   STORE Mean2Arg
@@ -280,6 +279,7 @@ Move:
 
   ADD FullDistance
   STORE FullDistance ; this is what LPOS and RPOS ought to say
+  OUT SSEG1
 
   FullSpeedWait: ; Loop while waiting for us to cut power
     LOAD Velocity
