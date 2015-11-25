@@ -124,7 +124,6 @@ Rotate:
 
   LOADI 1
   STORE MoveDirection
-  RETURN ; stubbed during debugging
 
   ; Now let's figure out how far we need to go
   LOAD NextPoint
@@ -151,6 +150,8 @@ Rotate:
   ISTORE OffsetTo
   STORE L2Y ; Do this here, so it's ready when Move uses it
   STORE AtanY
+
+  RETURN ; stubbed
 
   LOADI 360
   STORE PosModuloD
@@ -278,20 +279,25 @@ Move:
 
   ADD FullDistance
   STORE FullDistance ; this is what LPOS and RPOS ought to say
-  LOADI 0
-  STORE LoopTimes
+
+  ; Debugging, display next point
+  LOAD NextPoint
+  OUT SSEG1
+  LOADI NextPoint
+  ADDI 1
+  STORE Offset
+  ILOAD Offset
+  OUT SSEG2
+  LOADI NextPoint
+  ADDI 2
+  STORE Offset
+  ILOAD Offset
+  OUT LCD
 
   FullSpeedWait: ; Loop while waiting for us to cut power
     LOAD Velocity
     OUT LVELCMD
     OUT RVELCMD
-
-    LOADI 4
-    OUT LEDS
-    LOAD LoopTimes
-    ADDI 1
-    STORE LoopTimes
-    OUT LEDS
 
     IN LPOS
     STORE Mean2Arg
@@ -302,7 +308,6 @@ Move:
     LOAD FullDistance
     SUB DistanceTraveled ; How far we have left
     STORE DistanceLeft
-    OUT SSEG1
 
     CALL CalcDecDist ; deceleration distance
     SUB DistanceLeft
@@ -317,7 +322,6 @@ Move:
     STORE Mean2Arg
     IN RVEL
     CALL Mean2
-    OUT SSEG2
     JPOS DecelerationWait
     JNEG DecelerationWait
 
@@ -346,8 +350,6 @@ DistanceTraveled:
 DistanceLeft:
   DW 0
 Velocity:
-  DW 0
-LoopTimes:
   DW 0
 
 ; This table is used in example 1.  Remember: DW puts these
