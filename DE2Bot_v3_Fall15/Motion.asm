@@ -278,6 +278,8 @@ Move:
 
   LOADI DifferencePoint
   CALL DebugOutPoint
+  LOADI 10
+  CALL WaitAC
 
   IN LPOS
   STORE Mean2Arg
