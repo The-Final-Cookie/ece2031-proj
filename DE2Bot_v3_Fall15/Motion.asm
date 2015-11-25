@@ -87,6 +87,7 @@ Main: ; "Real" program starts here.
 
   ; Setup loop
   STORE Idx ; AC contains 0 after ClearPoint
+  OUT SSEG1
 
   MainLoopTop:
     LOADI NextPoint
@@ -105,6 +106,7 @@ Main: ; "Real" program starts here.
     LOAD Idx
     ADDI 1
     STORE Idx
+    OUT SSEG1
     ADDI -12
     JNEG MainLoopTop
 
@@ -112,8 +114,6 @@ Main: ; "Real" program starts here.
   JUMP Die
 
 Rotate:
-
-  RETURN ; Stubbed during implementation
   ; Now let's figure out how far we need to go
   LOAD NextPoint
   SUB CurrentPoint
@@ -153,37 +153,60 @@ Rotate:
   CALL PosModulo
   ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
   JNEG DirectionAndAngle_CCW
-  ADDI 180
-  STORE AngleToGo
-  LOADI 1
-  STORE AngleDirection
+    ADDI 180
+    STORE AngleToGo
+    LOADI 1
+    STORE AngleDirection
 
-  ; TODO enable backwards movement
-  LOADI 1
-  STORE MoveDirection
-  RETURN
+    ; TODO enable backwards movement
+    LOADI 1
+    STORE MoveDirection
+    JUMP DoneAngleCalc
 
   DirectionAndAngle_CCW:
-  LOADI 0
-  STORE AngleDirection
-  IN THETA
-  STORE CurrentHeading
-  LOAD DestHeading
-  SUB CurrentHeading
-  CALL PosModulo ; %360
-  STORE AngleToGo
+    LOADI 0
+    STORE AngleDirection
+    IN THETA
+    STORE CurrentHeading
+    LOAD DestHeading
+    SUB CurrentHeading
+    CALL PosModulo ; %360
+    STORE AngleToGo
 
-  ; TODO enable backwards movement
-  LOADI 1
-  STORE MoveDirection
+    ; TODO enable backwards movement
+    LOADI 1
+    STORE MoveDirection
 
-  RETURN
+  DoneAngleCalc:
+  LOAD AngleDirection
+  JZERO GoingCW
+    LOADI -511
+    STORE LVelocity
+    LOADI 511
+    STORE RVelocity
+
+    JUMP FullSpeedRotWait
+  GoingCW:
+    LOADI -511
+    STORE LVelocity
+    LOADI 511
+    STORE RVelocity
+
+  FullSpeedRotWait:
+    LOAD LVelocity
+    OUT LVELCMD
+    LOAD RVelocity
+    OUT RVELCMD
+
+    JUMP FullSpeedRotWait
 
 MoveDirection: DW 0 ; 1 is forward, 0 is backward
 AngleDirection: DW 0 ; 1 is CCW, 0 is CW
 AngleToGo: DW 0
 DestHeading: DW 0
 CurrentHeading: DW 0
+LVelocity: DW 0
+RVelocity: DW 0
 
 Move:
   LOAD MoveDirection
@@ -242,6 +265,9 @@ Move:
     OUT LVELCMD
     OUT RVELCMD
 
+    LOADI 4
+    OUT LEDS
+
     IN LPOS
     STORE Mean2Arg
     IN RPOS
@@ -273,6 +299,7 @@ Move:
   ADDI 2 ; count
   STORE Offset
   ILOAD Offset
+  OUT SSEG2
   CALL IndicateDest
 
   LOADI NextPoint
@@ -786,6 +813,30 @@ CalcDecDist:
 
 DecDist: DW 0
 
+CalcDecDeg:
+  IN LVEL
+  CALL Abs
+  STORE Mean2Arg
+  IN RVEL
+  CALL Abs
+  CALL Mean2
+  STORE  m16sA      
+  STORE  m16sB        
+  CALL   Mult16s ; The low word is already in AC
+  SHIFT  -9 ; / 512 (turning twice as fast, both wheels)
+  STORE  DecDeg ; Low 6 bits only
+  LOAD mres16sH
+  SHIFT 7
+  OR DecDeg
+
+	STORE d16sN
+	LOADI 113  ; 238 mm / (1.05 mm/robot unit)
+	STORE d16sD
+	CALL Div16s
+	STORE DecDeg  ; in radians
+
+DecDeg: DW 0
+
 ; Subroutine to wait (block) for 1 second
 Wait1:
   OUT    TIMER
@@ -1283,10 +1334,16 @@ Mean2Arg:
 ;*******************************************************************************
 Abs:
   JPOS   Abs_r
-  XOR    NegOne       ; Flip all bits
-  ADDI   1            ; Add one (i.e. negate number)
+  CALL Negate
 Abs_r:
   RETURN
+
+; Negate
+Negate:
+  XOR    NegOne       ; Flip all bits
+  ADDI   1            ; Add one (i.e. negate number)
+  RETURN
+
 
 ;*******************************************************************************
 ; Mod180: modulo 180
