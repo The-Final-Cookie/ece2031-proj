@@ -98,17 +98,28 @@ Main: ; "Real" program starts here.
     STORE Offset
     CALL CopyPoint ; Now we have CurrentPoint and NextPoint setup
 
-    LOADI 1
-    OUT LCD
-
     CALL Rotate ; Rotate to the proper heading
-    LOADI 2
-    OUT LCD
-
     CALL Move   ; Move to the proper point
-    LOADI 3
-    OUT LCD
 
+    ; we're at our point! indicate the destination
+    LOADI NextPoint
+    ADDI 2 ; count
+    STORE Offset
+    ILOAD Offset
+    CALL IndicateDest
+
+    ; update our current point
+    LOADI NextPoint
+    STORE Offset
+    LOADI CurrentPoint
+    STORE OffsetTo
+    CALL CopyPoint
+
+    ; Now let's output the nextpoint and wait so I can actually see it
+    LOADI NextPoint
+    CALL DebugOutPoint
+    LOADI 10
+    CALL WaitAC
 
     ; Update and loop check
     LOAD Idx
@@ -151,7 +162,7 @@ Rotate:
   STORE L2Y ; Do this here, so it's ready when Move uses it
   STORE AtanY
 
-  RETURN ; stubbed
+  RETURN ; TODO stubbed !!!
 
   LOADI 360
   STORE PosModuloD
@@ -279,7 +290,6 @@ Move:
 
   ADD FullDistance
   STORE FullDistance ; this is what LPOS and RPOS ought to say
-  OUT SSEG1
 
   FullSpeedWait: ; Loop while waiting for us to cut power
     LOAD Velocity
@@ -292,7 +302,6 @@ Move:
     IN RPOS
     CALL Mean2
     STORE DistanceTraveled
-    OUT SSEG2
 
     LOAD FullDistance
     SUB DistanceTraveled ; How far we have left
@@ -313,19 +322,6 @@ Move:
     CALL Mean2
     JPOS DecelerationWait
     JNEG DecelerationWait
-
-  ; we're at our point! indicate the destination and update our CurrentPoint
-  LOADI NextPoint
-  ADDI 2 ; count
-  STORE Offset
-  ILOAD Offset
-  CALL IndicateDest
-
-  LOADI NextPoint
-  STORE Offset
-  LOADI CurrentPoint
-  STORE OffsetTo
-  CALL CopyPoint
 
   ; and return, phew!
   RETURN 
@@ -510,6 +506,20 @@ DEAD:      DW &HDEAD   ; Example of a "local variable"
 ;***************************************************************
 ;* Subroutines
 ;***************************************************************
+
+; Debugging output for points, x in SSEG1, y in SSEG2, count in LCD
+DebugOutPoint:
+  STORE Offset
+  ILOAD Offset
+  OUT SSEG1
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  OUT SSEG2
+  LOAD Offset
+  ADDI 1
+  STORE Offset
+  OUT LCD
 
 ; Sets the point at AC to (0, 0, 0)
 ClearPoint:
@@ -945,8 +955,8 @@ BI2CL:
 I2CError:
   LOAD   Zero
   ADDI   &H12C       ; "I2C"
-  ;OUT    SSEG1
-  ;OUT    SSEG2       ; display error message
+  OUT    SSEG1
+  OUT    SSEG2       ; display error message
   JUMP   I2CError
 
 ; Subroutines to send AC value through the UART,
