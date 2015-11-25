@@ -117,6 +117,7 @@ Loop:
 	
 	CALL DirectionAndAngle
 	LOAD DirectionToGo
+	OUT LCD
 	JPOS callTurnCW
 	JZERO callTurnCCW 
 	callTurnCW: CALL TurnCW
@@ -243,9 +244,9 @@ CWForward3: RETURN
 
  
  TurnCCW: 
-  LOADI -100 
+  LOADI 100 
   OUT RVelCmd
-  LOADI 100
+  LOADI -100
   OUT LVelCmd
   IN THETA
   JNEG waitCCW
