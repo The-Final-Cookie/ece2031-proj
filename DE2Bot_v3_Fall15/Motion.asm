@@ -114,6 +114,7 @@ Main: ; "Real" program starts here.
   JUMP Die
 
 Rotate:
+  RETURN ; stubbed during debugging
   ; Now let's figure out how far we need to go
   LOAD NextPoint
   SUB CurrentPoint
