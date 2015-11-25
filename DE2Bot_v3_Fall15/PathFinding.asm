@@ -248,6 +248,8 @@ CalculateCost:
   CALL L2Estimate
   STORE ThisCost
 
+  RETURN ; TODO Fix the angle calculation
+
   LOADI 1
   STORE A2retrad ; we only want radians (with 8 fractional bits)
   LOADI 402 ; pi/2 with 8 fractional bits
