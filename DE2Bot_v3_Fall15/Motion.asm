@@ -287,6 +287,7 @@ Move:
     OUT RVELCMD
 
     IN LPOS
+    OUT LCD
     STORE Mean2Arg
     IN RPOS
     CALL Mean2
