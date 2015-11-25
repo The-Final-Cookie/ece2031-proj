@@ -276,6 +276,9 @@ Move:
   CALL L2Estimate
   STORE FullDistance
 
+  LOADI DifferencePoint
+  CALL DebugOutPoint
+
   IN LPOS
   STORE Mean2Arg
   IN RPOS
