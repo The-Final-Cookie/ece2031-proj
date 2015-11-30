@@ -74,10 +74,11 @@ WaitForUser:
 ;***************************************************************
 
 Main:
-  OUT RESETPOS  
+  OUT RESETPOS
+  LOADI 0
+  STORE CurrPoint
 MainLoop:
 	CALL    LoadCurrValues
-	
 	LOAD	NextPointX
 	SUB		CurrPointX
 	STORE  m16sA       ; Converting Feet to ticks
@@ -87,8 +88,8 @@ MainLoop:
 	LOAD   mres16sL      
 	STORE  AtanX      ; input to atan subroutine
 	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	NextPointX
-	SUB		CurrPointX
+	LOAD	NextPointY
+	SUB		CurrPointY
 	STORE  m16sA		; Converting Feet to ticks
 	LOAD   TicksPerFoot
 	STORE  m16sB
@@ -102,7 +103,8 @@ MainLoop:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
+	;CALL TurnCCWandForward
+	CALL Turn
 
 	JUMP MainLoop  
 
@@ -131,22 +133,49 @@ Forever:
 ;* Subroutines
 ;***************************************************************
 
+Turn:    ; Turns CW or CCW depending on Theta and Current Angle
 
-TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
+;Angle robot wants to turn to
+LOAD CurrAng
+OUT LCD
 
-Ini:
-  ;Good place to check that this stage happens only when turning back to 0 degree mark
-  LOADI 100 
+IN Theta
+SUB CurrAng
+JNEG TurnCCW
+JZERO Waiting
+JPOS TurnCW
+
+TurnCW:
+
+  LOADI -100 
   OUT RVelCmd
-  LOADI -100
+  LOADI 100
   OUT LVelCmd
+  ;Good place to check THETA, to make sure its going in the right direction
   IN THETA
   SUB CurrAng
+  JPOS TurnCW
+  JNEG Waiting
   JZERO Waiting
-  JNEG TurnCCW
-  JPOS Ini
+
+;TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
+
+;Ini:
+  ;Good place to check that this stage happens only when turning back to 0 degree mark
+ ; LOAD CurrAng
+  ;OUT LCD
+  ;LOADI 100 
+ ; OUT RVelCmd
+  ;LOADI -100
+  ;OUT LVelCmd
+  ;IN THETA
+  ;SUB CurrAng
+  ;JZERO Waiting
+  ;JNEG TurnCCW
+ ; JPOS Ini
 
 TurnCCW:
+
   LOADI 100 
   OUT RVelCmd
   LOADI -100
@@ -989,19 +1018,19 @@ Point7X: DW 2
 Point7Y: DW 0 
 Point7R: DW 0
 
-Point8X: DW 0 
-Point8Y: DW 0 
+Point8X: DW 3 
+Point8Y: DW -1 
 Point8R: DW 0
 
-Point9X: DW 0 
-Point9Y: DW 0 
+Point9X: DW 2
+Point9Y: DW -2 
 Point9R: DW 0
 
 Point10X: DW 0 
-Point10Y: DW 0 
+Point10Y: DW -2 
 Point10R: DW 0
 
-Point11X: DW 0 
+Point11X: DW -1 
 Point11Y: DW 0 
 Point11R: DW 0
 
