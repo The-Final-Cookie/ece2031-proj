@@ -93,20 +93,18 @@ Main: ; "Real" program starts here.
     LOADI NextPoint
     STORE OffsetTo
     LOADI OutPoints
-    ADD Idx ; need to add Idx 3 times, because each point is 3 wide
+    ADD Idx ; need to add Idx 3 times, because each point is 3 words wide
     ADD Idx
     ADD Idx
     STORE Offset
     CALL CopyPoint ; Now we have CurrentPoint and NextPoint setup
 
+    CALL SetupDifferencePoint
     CALL Rotate ; Rotate to the proper heading
     CALL Move   ; Move to the proper point
 
     ; we're at our point! indicate the destination
-    LOADI NextPoint
-    ADDI 2 ; count
-    STORE Offset
-    ILOAD Offset
+    LOAD NextPointIdx
     CALL IndicateDest
 
     ; update our current point
@@ -126,41 +124,32 @@ Main: ; "Real" program starts here.
   ; Once we've reached all 12 points
   JUMP Die
 
+SetupDifferencePoint:
+  ; Now let's figure out how far we need to go
+  LOAD NextPointX
+  SUB CurrentPointX
+  STORE DifferencePointX
+
+  LOAD NextPointY ; NextPoint y
+  SUB CurrentPointY ; CurrentPoint y
+  STORE DifferencePointY ; nextY - currY
+
+  RETURN
+
 Rotate:
 
   LOADI 1
   STORE MoveDirection
-
-  ; Now let's figure out how far we need to go
-  LOAD NextPoint
-  SUB CurrentPoint
-  STORE DifferencePoint
-  STORE L2X ; Do this here, so it's ready when Move uses it
-  STORE AtanX
-
-  LOADI NextPoint ; NextPoint y
-  ADDI 1
-  STORE Offset
-  LOADI CurrentPoint ; CurrentPoint y
-  ADDI 1
-  STORE OffsetTo
-  ILOAD OffsetTo
-  STORE Temp
-  ILOAD Offset
-  SUB Temp
-  STORE Temp ; nextY - currY
-  LOADI DifferencePoint
-  ADDI 1
-  STORE OffsetTo
-  LOAD Temp
-  ISTORE OffsetTo
-  STORE L2Y ; Do this here, so it's ready when Move uses it
-  STORE AtanY
-
-  RETURN ; TODO stubbed !!!
+  RETURN ; TODO stubbed
 
   LOADI 360
   STORE PosModuloD
+
+  LOAD DifferencePointX
+  STORE AtanX
+  
+  LOAD DifferencePointY
+  STORE AtanY
 
   CALL Atan2
   STORE DestHeading
@@ -240,34 +229,12 @@ Move:
   OUT LVELCMD
   OUT RVELCMD
 
-  ;; Now let's figure out how far we need to go
-  ;LOAD NextPoint
-  ;SUB CurrentPoint
-  ;STORE DifferencePoint
-  ;STORE L2X
-
-  ;LOADI NextPoint ; NextPoint y
-  ;ADDI 1
-  ;STORE Offset
-  ;LOADI CurrentPoint ; CurrentPoint y
-  ;ADDI 1
-  ;STORE OffsetTo
-  ;ILOAD OffsetTo
-  ;STORE Temp
-  ;ILOAD Offset
-  ;SUB Temp
-  ;STORE Temp ; nextY - currY
-  ;LOADI DifferencePoint
-  ;ADDI 1
-  ;STORE OffsetTo
-  ;LOAD Temp
-  ;ISTORE OffsetTo
-  ;STORE L2Y
-
-  ; All of that is done in Rotate
-  ; So everything should be setup to call L2Estimate
-
   ; TODO need to change this to allow backwards movement
+  LOAD DifferencePointX
+  STORE L2X
+  LOAD DifferencePointY
+  STORE L2Y
+
   CALL L2Estimate
   STORE FullDistance
   OUT LCD
@@ -319,9 +286,8 @@ Move:
 
   ; and return, phew!
   RETURN 
-DifferencePoint:
-  DW 0 ; x
-  DW 0 ; y
+DifferencePointX:  DW 0 ; x
+DifferencePointY:  DW 0 ; y
 FullDistance:
   DW 0
 DistanceTraveled:
@@ -813,12 +779,12 @@ BestTheta: DW 0 ; stored with 8 fractional bits
 BestIdx: DW 0
 BestPoint: ; two different names <- used by PathFind
 NextPoint: ; same memory location <- used by the rest of the program
-  DW 0 ; x
-  DW 0 ; y
-  DW 0 ; index + 1 (for reporting)
+NextPointX: DW 0 ; x
+NextPointY: DW 0 ; y
+NextPointIdx: DW 0 ; index + 1 (for reporting)
 CurrentPoint:
-  DW 0
-  DW 0
+CurrentPointX: DW 0
+CurrentPointY: DW 0
   DW 0
 
 CalcDecDist:
