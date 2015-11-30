@@ -103,8 +103,10 @@ MainLoop:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	;CALL TurnCCWandForward
-	CALL Turn
+	CALL TurnCCWandForward
+	;CALL Turn
+	;LOAD NextPointRank
+	;Call IndicateDest
 
 	JUMP MainLoop  
 
@@ -133,49 +135,50 @@ Forever:
 ;* Subroutines
 ;***************************************************************
 
-Turn:    ; Turns CW or CCW depending on Theta and Current Angle
+;Turn:    ; Turns CW or CCW depending on Theta and Current Angle
 
 ;Angle robot wants to turn to
-LOAD CurrAng
-OUT LCD
+;LOAD CurrAng
+;OUT LCD
 
-IN Theta
-SUB CurrAng
-JNEG TurnCCW
-JZERO Waiting
-JPOS TurnCW
+;IN Theta
+;SUB CurrAng
+;JNEG TurnCCW
+;JZERO Waiting
+;JPOS TurnCW
 
-TurnCW:
+;TurnCW:
 
-  LOADI -100 
-  OUT RVelCmd
-  LOADI 100
-  OUT LVelCmd
-  ;Good place to check THETA, to make sure its going in the right direction
-  IN THETA
-  SUB CurrAng
-  JPOS TurnCW
-  JNEG Waiting
-  JZERO Waiting
-
-;TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
-
-;Ini:
-  ;Good place to check that this stage happens only when turning back to 0 degree mark
- ; LOAD CurrAng
-  ;OUT LCD
-  ;LOADI 100 
+ ; LOADI -100 
  ; OUT RVelCmd
-  ;LOADI -100
-  ;OUT LVelCmd
+ ; LOADI 100
+ ; OUT LVelCmd
+  ;Good place to check THETA, to make sure its going in the right direction
   ;IN THETA
   ;SUB CurrAng
+  ;JPOS TurnCW
+  ;JNEG Waiting
   ;JZERO Waiting
-  ;JNEG TurnCCW
- ; JPOS Ini
+
+TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
+
+Ini:
+ ; Good place to check that this stage happens only when turning back to 0 degree mark
+  LOAD CurrAng
+  OUT LCD
+  IN THETA
+  SUB CurrAng
+  JZERO Waiting
+  JNEG TurnCCW
+  LOADI 100 
+  OUT RVelCmd
+  LOADI -100
+  OUT LVelCmd
+  JPOS Ini
 
 TurnCCW:
-
+  LOAD CurrAng
+  OUT LCD
   LOADI 100 
   OUT RVelCmd
   LOADI -100
@@ -264,6 +267,8 @@ P0:
 	STORE NextPointX
 	LOAD Point1Y
 	STORE NextPointY
+	;LOAD Point1R
+	;STORE NextPointRank
 	LOADI 1
 	STORE CurrPoint
 	RETURN
@@ -276,6 +281,8 @@ P1:
 	STORE NextPointX
 	LOAD Point2Y
 	STORE NextPointY
+	;LOAD Point2R
+	;STORE NextPointRank
 	LOADI 2
 	STORE CurrPoint
 	RETURN
@@ -288,6 +295,8 @@ P2:
 	STORE NextPointX
 	LOAD Point3Y
 	STORE NextPointY
+	;LOAD Point3R
+	;STORE NextPointRank
 	LOADI 3
 	STORE CurrPoint
 	RETURN
@@ -300,6 +309,8 @@ P3:
 	STORE NextPointX
 	LOAD Point4Y
 	STORE NextPointY
+	;LOAD Point4R
+	;STORE NextPointRank
 	LOADI 4
 	STORE CurrPoint
 	RETURN
@@ -312,6 +323,8 @@ P4:
 	STORE NextPointX
 	LOAD Point5Y
 	STORE NextPointY
+	;LOAD Point5R
+	;STORE NextPointRank
 	LOADI 5
 	STORE CurrPoint
 	RETURN
@@ -324,6 +337,8 @@ P5:
 	STORE NextPointX
 	LOAD Point6Y
 	STORE NextPointY
+	;LOAD Point6R
+	;STORE NextPointRank
 	LOADI 6
 	STORE CurrPoint
 	RETURN
@@ -336,6 +351,8 @@ P6:
 	STORE NextPointX
 	LOAD Point7Y
 	STORE NextPointY
+	;LOAD Point7R
+	;STORE NextPointRank
 	LOADI 7
 	STORE CurrPoint
 	RETURN
@@ -348,6 +365,8 @@ P7:
 	STORE NextPointX
 	LOAD Point8Y
 	STORE NextPointY
+	;LOAD Point8R
+	;STORE NextPointRank
 	LOADI 8
 	STORE CurrPoint
 	RETURN
@@ -360,6 +379,8 @@ P8:
 	STORE NextPointX
 	LOAD Point9Y
 	STORE NextPointY
+	;LOAD Point9R
+	;STORE NextPointRank
 	LOADI 9
 	STORE CurrPoint
 	RETURN
@@ -372,6 +393,8 @@ P9:
 	STORE NextPointX
 	LOAD Point10Y
 	STORE NextPointY
+	;LOAD Point10R
+	;STORE NextPointRank
 	LOADI 10
 	STORE CurrPoint
 	RETURN
@@ -384,6 +407,8 @@ P10:
 	STORE NextPointX
 	LOAD Point11Y
 	STORE NextPointY
+	;LOAD Point11R
+	;STORE NextPointRank
 	LOADI 11
 	STORE CurrPoint
 	RETURN
@@ -396,6 +421,8 @@ P11:
 	STORE NextPointX
 	LOAD Point12Y
 	STORE NextPointY
+	;LOAD Point12R
+	;STORE NextPointRank
 	LOADI 12
 	STORE CurrPoint
 	RETURN
@@ -990,58 +1017,59 @@ Point0X: DW 0
 Point0Y: DW 0 
 Point0R: DW 0
 
-Point1X: DW 1
+Point1X: DW 2
 Point1Y: DW 2
-Point1R: DW 0
+Point1R: DW 4
 
 Point2X: DW 1 
 Point2Y: DW 3 
-Point2R: DW 0 
+Point2R: DW 5 
 
 Point3X: DW 0 
 Point3Y: DW 4 
-Point3R: DW 0
+Point3R: DW 2
 
 Point4X: DW -1 
 Point4Y: DW 4 
-Point4R: DW 0
+Point4R: DW 1
 
 Point5X: DW -1 
 Point5Y: DW 0 
-Point5R: DW 0
+Point5R: DW 6
 
 Point6X: DW 0 
 Point6Y: DW -1 
-Point6R: DW 0
+Point6R: DW 7
 
 Point7X: DW 2 
 Point7Y: DW 0 
-Point7R: DW 0
+Point7R: DW 3
 
 Point8X: DW 3 
 Point8Y: DW -1 
-Point8R: DW 0
+Point8R: DW 8
 
 Point9X: DW 2
 Point9Y: DW -2 
-Point9R: DW 0
+Point9R: DW 9
 
 Point10X: DW 0 
 Point10Y: DW -2 
-Point10R: DW 0
+Point10R: DW 10
 
 Point11X: DW -1 
 Point11Y: DW 0 
-Point11R: DW 0
+Point11R: DW 11
 
 Point12X: DW 0 
 Point12Y: DW 0 
-Point12R: DW 0
+Point12R: DW 12
 
 CurrPointX: DW 0
 CurrPointY: DW 0
 NextPointX: DW 0
 NextPointY: DW 0
+;NextPointRank: DW 0
 
 CurrPoint:  DW 0
 
