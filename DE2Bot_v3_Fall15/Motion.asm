@@ -137,13 +137,7 @@ SetupDifferencePoint:
   RETURN
 
 Rotate:
-
-  LOADI 1
-  STORE MoveDirection
   RETURN ; TODO stubbed
-
-  LOADI 360
-  STORE PosModuloD
 
   LOAD DifferencePointX
   STORE AtanX
@@ -156,11 +150,14 @@ Rotate:
   IN THETA
   STORE CurrentHeading
 
+  LOADI 360
+  STORE PosModuloD
+
   LOAD DestHeading
   SUB CurrentHeading
   CALL PosModulo
   ADDI -180 ; diff = ((CurrAngle - CurrTheta) % 360) - 180
-  JNEG DirectionAndAngle_CCW
+  JNEG DirectionAndAngle_CW
     ADDI 180
     STORE AngleToGo
     LOADI 1
@@ -171,7 +168,7 @@ Rotate:
     STORE MoveDirection
     JUMP DoneAngleCalc
 
-  DirectionAndAngle_CCW:
+  DirectionAndAngle_CW:
     LOADI 0
     STORE AngleDirection
     IN THETA
@@ -195,9 +192,9 @@ Rotate:
 
     JUMP FullSpeedRotWait
   GoingCW:
-    LOADI -511
-    STORE LVelocity
     LOADI 511
+    STORE LVelocity
+    LOADI -511
     STORE RVelocity
 
   FullSpeedRotWait:
@@ -205,6 +202,12 @@ Rotate:
     OUT LVELCMD
     LOAD RVelocity
     OUT RVELCMD
+
+    CALL CalcDecDeg
+    STORE Temp
+
+    IN THETA
+
 
     JUMP FullSpeedRotWait
 
@@ -816,10 +819,10 @@ CalcDecDeg:
   STORE  m16sB        
   CALL   Mult16s ; The low word is already in AC
   SHIFT  -9 ; / 512 (turning twice as fast, both wheels)
-  STORE  DecDeg ; Low 6 bits only
+  STORE  DecDeg ; Low 7 bits only
   LOAD mres16sH
   SHIFT 7
-  OR DecDeg
+  OR DecDeg ; And the upper 9
 
 	STORE d16sN
 	LOADI 113  ; 238 mm / (1.05 mm/robot unit)
@@ -829,6 +832,20 @@ CalcDecDeg:
 
 DecDeg: DW 0
 
+ToRadians: ; x * pi / 180
+  STORE m16sA
+  LOADI 804 ; pi with 8 fractional bits
+  STORE m16sB
+  CALL Mult16s
+  STORE d16sN
+  LOADI 180
+  STORE d16sD
+  CALL Div16s
+  LOAD dres16sQ 
+  RETURN
+
+FromRadians: ; x * 180 / pi
+  RETURN
 ; Subroutine to wait (block) for 1 second
 Wait1:
   OUT    TIMER
@@ -1306,6 +1323,100 @@ d16sC1: DW 0 ; carry value
 d16sC2: DW 0 ; carry value
 dres16sQ: DW 0 ; quotient result
 dres16sR: DW 0 ; remainder result
+
+; Unsigned integer division Div16u
+; if D == 0 then error(DivisionByZeroException) end
+; Q := 0                 -- initialize quotient and remainder to zero
+; R := 0                     
+; for i = n-1...0 do     -- where n is number of bits in N
+;   R := R << 1          -- left-shift R by 1 bit
+;   R(0) := N(i)         -- set the least-significant bit of R equal to bit i of the numerator
+;   if R >= D then
+;     R := R - D
+;     Q(i) := 1
+;   end
+; end
+Div16u:
+  LOADI 0
+  STORE dres16uQ
+  STORE dres16uR
+  LOADI 15
+  STORE d16uT ; loop counter
+  Div16u_loop:
+    LOAD dres16uR
+    SHIFT 1
+    STORE dres16uR
+    LOAD d16uN
+    STORE ShiftStored_Arg
+    LOAD d16uT
+    CALL Negate
+    STORE ShiftStored_N
+    CALL ShiftStored
+    LOAD ShiftStored_Arg
+    AND One
+    OR dres16uR
+    STORE dres16uR
+    SUB d16uD
+    JNEG Div16u_update
+      STORE dres16uR
+      LOADI 1
+      STORE ShiftStored_Arg
+      LOAD d16uT
+      STORE ShiftStored_N
+      CALL ShiftStored
+      LOAD ShiftStored_Arg
+      OR dres16uQ
+      STORE dres16uQ
+    Div16u_update:
+    LOAD d16uT
+    ADDI -1
+    JPOS Div16u_loop
+  RETURN
+d16uN: DW 0
+d16uD: DW 0
+d16uT: DW 0
+dres16uQ: DW 0
+dres16uR: DW 0
+
+; Shift by stored value (non-immediate)
+; ShiftStored_N is the Number of times to shift (and direction)
+; ShiftStored_Arg is the operating register
+ShiftStored:
+  LOAD ShiftStored_N
+  JNEG RightShiftStored
+  JUMP LeftShiftStored
+
+RightShiftStored:
+  CALL Abs
+  STORE ShiftStored_N
+
+  ; don't need a precheck, there is at least one shift to do
+  RightShiftStoredLoop:
+    LOAD ShiftStored_Arg
+    SHIFT -1
+    STORE ShiftStored_Arg
+    LOAD ShiftStored_N
+    ADDI -1
+    STORE ShiftStored_N
+    JPOS RightShiftStoredLoop
+  RETURN
+
+LeftShiftStored:
+  JZERO LeftShiftStoredLoopEnd ; nothing to do if ShiftStored_N = 0
+  LeftShiftStoredLoop:
+    LOAD ShiftStored_Arg
+    SHIFT 1
+    STORE ShiftStored_Arg
+    LOAD ShiftStored_N
+    ADDI -1
+    STORE ShiftStored_N
+    JPOS LeftShiftStoredLoop
+
+  LeftShiftStoredLoopEnd:
+  RETURN
+
+ShiftStored_N: DW 0
+ShiftStored_Arg: DW 0
 
 ; Mean of two, uses Mean2Arg and AC, returns to AC
 Mean2:
