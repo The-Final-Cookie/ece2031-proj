@@ -201,29 +201,29 @@ LoadCurrValues:
 
 	LOAD CurrPoint
 	JZERO P0
-	SUB 1
+	ADDI -1
 	JZERO P1
-	SUB 1
+	ADDI -1
 	JZERO P2
-	SUB 1
+	ADDI -1
 	JZERO P3
-	SUB 1
+	ADDI -1
 	JZERO P4
-	SUB 1
+	ADDI -1
 	JZERO P5
-	SUB 1
+	ADDI -1
 	JZERO P6
-	SUB 1
+	ADDI -1
 	JZERO P7
-	SUB 1
+	ADDI -1
 	JZERO P8
-	SUB 1
+	ADDI -1
 	JZERO P9
-	SUB 1
+	ADDI -1
 	JZERO P10
-	SUB 1
+	ADDI -1
 	JZERO P11
-	SUB 1
+	ADDI -1
 	JZERO P12
 
 P0:
@@ -235,11 +235,11 @@ P0:
 	STORE NextPointX
 	LOAD Point1Y
 	STORE NextPointY
-	LOAD 1
+	LOADI 1
 	STORE CurrPoint
 	RETURN
 P1:
-	LOAD Point1X
+	LOADI Point1X
 	STORE CurrPointX
 	LOAD Point1Y
 	STORE CurrPointY
@@ -247,7 +247,7 @@ P1:
 	STORE NextPointX
 	LOAD Point2Y
 	STORE NextPointY
-	LOAD 2
+	LOADI 2
 	STORE CurrPoint
 	RETURN
 P2:
@@ -259,7 +259,7 @@ P2:
 	STORE NextPointX
 	LOAD Point3Y
 	STORE NextPointY
-	LOAD 3
+	LOADI 3
 	STORE CurrPoint
 	RETURN
 P3:
@@ -271,7 +271,7 @@ P3:
 	STORE NextPointX
 	LOAD Point4Y
 	STORE NextPointY
-	LOAD 4
+	LOADI 4
 	STORE CurrPoint
 	RETURN
 P4:
@@ -283,7 +283,7 @@ P4:
 	STORE NextPointX
 	LOAD Point5Y
 	STORE NextPointY
-	LOAD 5
+	LOADI 5
 	STORE CurrPoint
 	RETURN
 P5:
@@ -295,7 +295,7 @@ P5:
 	STORE NextPointX
 	LOAD Point6Y
 	STORE NextPointY
-	LOAD 6
+	LOADI 6
 	STORE CurrPoint
 	RETURN
 P6:
@@ -307,7 +307,7 @@ P6:
 	STORE NextPointX
 	LOAD Point7Y
 	STORE NextPointY
-	LOAD 7
+	LOADI 7
 	STORE CurrPoint
 	RETURN
 P7:
@@ -319,7 +319,7 @@ P7:
 	STORE NextPointX
 	LOAD Point8Y
 	STORE NextPointY
-	LOAD 8
+	LOADI 8
 	STORE CurrPoint
 	RETURN
 P8:
@@ -331,7 +331,7 @@ P8:
 	STORE NextPointX
 	LOAD Point9Y
 	STORE NextPointY
-	LOAD 9
+	LOADI 9
 	STORE CurrPoint
 	RETURN
 P9:
@@ -343,7 +343,7 @@ P9:
 	STORE NextPointX
 	LOAD Point10Y
 	STORE NextPointY
-	LOAD 10
+	LOADI 10
 	STORE CurrPoint
 	RETURN
 P10:
@@ -355,7 +355,7 @@ P10:
 	STORE NextPointX
 	LOAD Point11Y
 	STORE NextPointY
-	LOAD 11
+	LOADI 11
 	STORE CurrPoint
 	RETURN
 P11:
@@ -367,7 +367,7 @@ P11:
 	STORE NextPointX
 	LOAD Point12Y
 	STORE NextPointY
-	LOAD 12
+	LOADI 12
 	STORE CurrPoint
 	RETURN
 P12:
