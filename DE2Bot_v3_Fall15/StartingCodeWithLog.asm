@@ -74,10 +74,12 @@ WaitForUser:
 ;***************************************************************
 
 Main:
-  OUT RESETPOS
-  
-	LOAD	Point1X
-	SUB		Point0X
+  OUT RESETPOS  
+MainLoop:
+	CALL    LoadCurrValues
+	
+	LOAD	NextPointX
+	SUB		CurrPointX
 	STORE  m16sA       ; Converting Feet to ticks
 	LOAD   TicksPerFoot 
 	STORE  m16sB        
@@ -85,8 +87,8 @@ Main:
 	LOAD   mres16sL      
 	STORE  AtanX      ; input to atan subroutine
 	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	Point1Y
-	SUB		Point0Y
+	LOAD	NextPointX
+	SUB		CurrPointX
 	STORE  m16sA		; Converting Feet to ticks
 	LOAD   TicksPerFoot
 	STORE  m16sB
@@ -100,74 +102,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	
 	CALL TurnCCWandForward
 
-
-  
- 
-	LOAD	Point2X     ; SECOND POINT HARD CODED
-	SUB		Point1X
-	STORE  m16sA       ; Converting Feet to ticks
-	LOAD   TicksPerFoot 
-	STORE  m16sB        
-	CALL   Mult16s    
-	LOAD   mres16sL      
-	STORE  AtanX      ; input to atan subroutine
-	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	Point2Y
-	SUB		Point1Y
-	STORE  m16sA		; Converting Feet to ticks
-	LOAD   TicksPerFoot
-	STORE  m16sB
-	CALL   Mult16s
-	LOAD   mres16sL
-	STORE  AtanY      ; input to atan subroutine
-	STORE  L2Y        ; input to distance estimation subroutine
-	CALL   Atan2      ; find the angle
-	STORE  CurrAng
-
-	CALL   L2Estimate ; estimate the distance
-	STORE  CurrDist
-	SUB	   OneFoot
-	STORE OneFootLess
-	OUT    SSEG2
-	
-	
-	CALL TurnCCWandForward 
-	
-	LOAD	Point3X     ; SECOND POINT HARD CODED
-	SUB		Point2X
-	STORE  m16sA       ; Converting Feet to ticks
-	LOAD   TicksPerFoot 
-	STORE  m16sB        
-	CALL   Mult16s    
-	LOAD   mres16sL      
-	STORE  AtanX      ; input to atan subroutine
-	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	Point3Y
-	SUB		Point2Y
-	LOAD   TicksPerFoot
-	STORE  m16sB
-	CALL   Mult16s
-	LOAD   mres16sL
-	STORE  AtanY      ; input to atan subroutine
-	STORE  L2Y        ; input to distance estimation subroutine
-	CALL   Atan2      ; find the angle
-	STORE  CurrAng
-	CALL   L2Estimate ; estimate the distance
-	STORE  CurrDist
-	SUB	   OneFoot
-	STORE OneFootLess
-	OUT    SSEG2
-	
-	
-	CALL TurnCCWandForward 
- 
- 
-
-  
-  
+	JUMP MainLoop  
 
   
 
@@ -194,57 +131,47 @@ Forever:
 ;* Subroutines
 ;***************************************************************
 
- TurnCCWandForward: 
-  LOADI 0
-  STORE amtTurned
-  IN THETA
-  STORE thetaold
-  LOADI 360
-  SUB thetaold
-  ADD CurrAng
-  CALL Mod360
-  STORE AngleToGo
 
+TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
 
- 
- TurnCCWLoop:
-
+Ini:
+  ;Good place to check that this stage happens only when turning back to 0 degree mark
   LOADI 100 
   OUT RVelCmd
   LOADI -100
   OUT LVelCmd
   IN THETA
-  SUB thetaold
+  SUB CurrAng
+  JZERO Waiting
+  JNEG TurnCCW
+  JPOS Ini
 
-  STORE amtTurned
-  LOAD amtTurned
-  JPOS Skip
-  JZERO Skip
-  ADD Deg360
-  STORE amtTurned
-  
-Skip:  
-  LOAD amtTurned
-  SUB AngleToGo
-
+TurnCCW:
+  LOADI 100 
+  OUT RVelCmd
+  LOADI -100
+  OUT LVelCmd
+  ;Good place to check THETA, to make sure its going in the right direction
+  IN THETA
+  SUB CurrAng
   JPOS Waiting
-  JUMP TurnCCWLoop
+  JZERO Waiting
+  JNEG TurnCCW
   
  Waiting:
- LOADI 0
- OUT RVelCmd
- OUT LvelCmd
- IN LVEL
- JNEG Waiting
- IN RVEL
- JNEG Waiting
- IN LPOS
- STORE OLDPOS
+  LOADI 0
+  OUT RVelCmd
+  OUT LvelCmd
+  IN LVEL
+  JNEG Waiting
+  JPOS Waiting
+  IN RVEL
+  JNEG Waiting
+  JPOS Waiting
+  IN LPOS
+  STORE OLDPOS
  
  Forward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
-  LOADI 1023
-  OUT LEDS
-  IN THETA
   LOADI 350
   OUT LVelCmd
   OUT RVelCmd
@@ -252,39 +179,204 @@ Skip:
   SUB OLDPOS
   SUB OneFootLess
   JPOS Forward2
-  JUMP Forward
+  JZERO Forward2
+  JNEG Forward
 
 Forward2: ; Move forward the remaining foot
-  IN THETA
   LOADI 100
   OUT LVelCmd
   OUT RVelCmd
   IN LPOS
   SUB OLDPOS
   SUB CurrDist
-  
   JPOS Forward3
-  JUMP Forward2
+  JZERO Forward3
+  JNEG Forward2
   
  Forward3:		; Return
  RETURN
- 
- 
- 
- TurnCW:     ; Turns clockwise to the value of CurrAngle 
-  LOADI -100 
-  OUT RVelCmd
-  LOADI 100
-  OUT LVelCmd
-  IN THETA
-  JZERO SkipIfZeroCW
-  SUB CurrAng     ;  should be between 
-  
-  JPOS Die
- 
-SkipIfZeroCW:
-  JUMP TurnCW
+
+
+LoadCurrValues:
+
+	LOAD CurrPoint
+	JZERO P0
+	SUB 1
+	JZERO P1
+	SUB 1
+	JZERO P2
+	SUB 1
+	JZERO P3
+	SUB 1
+	JZERO P4
+	SUB 1
+	JZERO P5
+	SUB 1
+	JZERO P6
+	SUB 1
+	JZERO P7
+	SUB 1
+	JZERO P8
+	SUB 1
+	JZERO P9
+	SUB 1
+	JZERO P10
+	SUB 1
+	JZERO P11
+	SUB 1
+	JZERO P12
+
+P0:
+	LOAD Point0X
+	STORE CurrPointX
+	LOAD Point0Y
+	STORE CurrPointY
+	LOAD Point1X
+	STORE NextPointX
+	LOAD Point1Y
+	STORE NextPointY
+	LOAD 1
+	STORE CurrPoint
+	RETURN
+P1:
+	LOAD Point1X
+	STORE CurrPointX
+	LOAD Point1Y
+	STORE CurrPointY
+	LOAD Point2X
+	STORE NextPointX
+	LOAD Point2Y
+	STORE NextPointY
+	LOAD 2
+	STORE CurrPoint
+	RETURN
+P2:
+	LOAD Point2X
+	STORE CurrPointX
+	LOAD Point2Y
+	STORE CurrPointY
+	LOAD Point3X
+	STORE NextPointX
+	LOAD Point3Y
+	STORE NextPointY
+	LOAD 3
+	STORE CurrPoint
+	RETURN
+P3:
+	LOAD Point3X
+	STORE CurrPointX
+	LOAD Point3Y
+	STORE CurrPointY
+	LOAD Point4X
+	STORE NextPointX
+	LOAD Point4Y
+	STORE NextPointY
+	LOAD 4
+	STORE CurrPoint
+	RETURN
+P4:
+	LOAD Point4X
+	STORE CurrPointX
+	LOAD Point4Y
+	STORE CurrPointY
+	LOAD Point5X
+	STORE NextPointX
+	LOAD Point5Y
+	STORE NextPointY
+	LOAD 5
+	STORE CurrPoint
+	RETURN
+P5:
+	LOAD Point5X
+	STORE CurrPointX
+	LOAD Point5Y
+	STORE CurrPointY
+	LOAD Point6X
+	STORE NextPointX
+	LOAD Point6Y
+	STORE NextPointY
+	LOAD 6
+	STORE CurrPoint
+	RETURN
+P6:
+	LOAD Point6X
+	STORE CurrPointX
+	LOAD Point6Y
+	STORE CurrPointY
+	LOAD Point7X
+	STORE NextPointX
+	LOAD Point7Y
+	STORE NextPointY
+	LOAD 7
+	STORE CurrPoint
+	RETURN
+P7:
+	LOAD Point7X
+	STORE CurrPointX
+	LOAD Point7Y
+	STORE CurrPointY
+	LOAD Point8X
+	STORE NextPointX
+	LOAD Point8Y
+	STORE NextPointY
+	LOAD 8
+	STORE CurrPoint
+	RETURN
+P8:
+	LOAD Point8X
+	STORE CurrPointX
+	LOAD Point8Y
+	STORE CurrPointY
+	LOAD Point9X
+	STORE NextPointX
+	LOAD Point9Y
+	STORE NextPointY
+	LOAD 9
+	STORE CurrPoint
+	RETURN
+P9:
+	LOAD Point9X
+	STORE CurrPointX
+	LOAD Point9Y
+	STORE CurrPointY
+	LOAD Point10X
+	STORE NextPointX
+	LOAD Point10Y
+	STORE NextPointY
+	LOAD 10
+	STORE CurrPoint
+	RETURN
+P10:
+	LOAD Point10X
+	STORE CurrPointX
+	LOAD Point10Y
+	STORE CurrPointY
+	LOAD Point11X
+	STORE NextPointX
+	LOAD Point11Y
+	STORE NextPointY
+	LOAD 11
+	STORE CurrPoint
+	RETURN
+P11:
+	LOAD Point11X
+	STORE CurrPointX
+	LOAD Point11Y
+	STORE CurrPointY
+	LOAD Point12X
+	STORE NextPointX
+	LOAD Point12Y
+	STORE NextPointY
+	LOAD 12
+	STORE CurrPoint
+	RETURN
+P12:
+	JUMP Die
+
+	
+	
 ; Subroutine to wait (block) for 1 second
+
 Wait1:
 	OUT    TIMER
 Wloop:
@@ -292,6 +384,7 @@ Wloop:
 	ADDI   -10         ; 1 second in 10Hz.
 	JNEG   Wloop
 	RETURN
+	
 
 ; Subroutine to wait the number of timer counts currently in AC
 WaitAC:
@@ -780,24 +873,7 @@ Mod180n:
 	JNEG   Mod180n
 	ADDI   -180         ; go back negative
 	RETURN
-;*******************************************************************************
-; Mod360: modulo 360
-; Returns AC%360 in AC
-; Written by Kevin Johnson.  No licence or copyright applied.
-;*******************************************************************************	
-Mod360:
-	JNEG   Mod180n      ; handle negatives
-Mod360p:
-	ADDI   -360
-	JPOS   Mod360p      ; subtract 360 until negative
-	ADDI   360         ; go back positive
-	RETURN
-Mod360n:
-	ADDI   360          ; add 360 until positive
-	JNEG   Mod360n
-	ADDI   -360         ; go back negative
-	RETURN
-
+	
 ;*******************************************************************************
 ; L2Estimate:  Pythagorean distance estimation
 ; Written by Kevin Johnson.  No licence or copyright applied.
@@ -879,40 +955,37 @@ CurrDist:   DW 0      ; Current Distance
 OneFootLess: DW 0;   ; One foot less than current dist
 CurrAng:    DW 0      ; Current Angle
 OLDPOS:     DW 0      ; 
-thetaold: DW 0
-thetanew: DW 0
-amtTurned: DW 0
-AngleToGo: DW 0
+
 
 Point0X: DW 0 
 Point0Y: DW 0 
 Point0R: DW 0
 
-Point1X: DW 2
+Point1X: DW 1
 Point1Y: DW 2
 Point1R: DW 0
 
-Point2X: DW 4 
-Point2Y: DW 2 
+Point2X: DW 1 
+Point2Y: DW 3 
 Point2R: DW 0 
 
-Point3X: DW 2 
-Point3Y: DW 2 
+Point3X: DW 0 
+Point3Y: DW 4 
 Point3R: DW 0
 
-Point4X: DW 1 
-Point4Y: DW 2 
+Point4X: DW -1 
+Point4Y: DW 4 
 Point4R: DW 0
 
-Point5X: DW 0 
+Point5X: DW -1 
 Point5Y: DW 0 
 Point5R: DW 0
 
 Point6X: DW 0 
-Point6Y: DW 0 
+Point6Y: DW -1 
 Point6R: DW 0
 
-Point7X: DW 0 
+Point7X: DW 2 
 Point7Y: DW 0 
 Point7R: DW 0
 
@@ -921,20 +994,27 @@ Point8Y: DW 0
 Point8R: DW 0
 
 Point9X: DW 0 
-Poiny9Y: DW 0 
+Point9Y: DW 0 
 Point9R: DW 0
 
 Point10X: DW 0 
-Poiny10Y: DW 0 
+Point10Y: DW 0 
 Point10R: DW 0
 
 Point11X: DW 0 
-Poiny11Y: DW 0 
+Point11Y: DW 0 
 Point11R: DW 0
 
 Point12X: DW 0 
-Poiny12Y: DW 0 
+Point12Y: DW 0 
 Point12R: DW 0
+
+CurrPointX: DW 0
+CurrPointY: DW 0
+NextPointX: DW 0
+NextPointY: DW 0
+
+CurrPoint:  DW 0
 
 
 ;***************************************************************
