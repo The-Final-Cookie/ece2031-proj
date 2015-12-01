@@ -75,12 +75,9 @@ WaitForUser:
 
 Main:
   OUT RESETPOS
-  LOADI 0
-  STORE CurrPoint
-MainLoop:
-	CALL    LoadCurrValues
-	LOAD	NextPointX
-	SUB		CurrPointX
+    
+	LOAD   Point1X
+	SUB	   Point0X
 	STORE  m16sA       ; Converting Feet to ticks
 	LOAD   TicksPerFoot 
 	STORE  m16sB        
@@ -88,8 +85,8 @@ MainLoop:
 	LOAD   mres16sL      
 	STORE  AtanX      ; input to atan subroutine
 	STORE  L2X    	  ; input to distance estimation subroutine
-	LOAD	NextPointY
-	SUB		CurrPointY
+	LOAD	Point1Y
+	SUB		Point0Y
 	STORE  m16sA		; Converting Feet to ticks
 	LOAD   TicksPerFoot
 	STORE  m16sB
@@ -104,14 +101,325 @@ MainLoop:
 	SUB	   OneFoot
 	STORE OneFootLess
 	CALL TurnCCWandForward
-	;CALL Turn
-	;LOAD NextPointRank
-	;Call IndicateDest
 
-	JUMP MainLoop  
+	
+	
+	
+	
+	
+    
+	LOAD   Point2X
+	SUB	   Point1X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point2Y
+	SUB		Point1Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	
+	
+	
+    
+	LOAD   Point3X
+	SUB	   Point2X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point3Y
+	SUB		Point2Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
 
-  
+    
+	LOAD   Point4X
+	SUB	   Point3X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point4Y
+	SUB		Point3Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
 
+	
+    
+	LOAD   Point5X
+	SUB	   Point4X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point5Y
+	SUB		Point4Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	    
+	LOAD   Point6X
+	SUB	   Point5X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point6Y
+	SUB		Point5Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	    
+	LOAD   Point7X
+	SUB	   Point6X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point7Y
+	SUB		Point6Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	    
+	LOAD   Point8X
+	SUB	   Point7X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point8Y
+	SUB		Point7Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	    
+	LOAD   Point9X
+	SUB	   Point8X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point9Y
+	SUB		Point8Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	
+	
+	    
+	LOAD   Point10X
+	SUB	   Point9X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point10Y
+	SUB		Point9Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	JUMP Die
+	
+	    
+	LOAD   Point11X
+	SUB	   Point10X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point11Y
+	SUB		Point10Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	JUMP Die
+	
+	    
+	LOAD   Point12X
+	SUB	   Point11X
+	STORE  m16sA       ; Converting Feet to ticks
+	LOAD   TicksPerFoot 
+	STORE  m16sB        
+	CALL   Mult16s    
+	LOAD   mres16sL      
+	STORE  AtanX      ; input to atan subroutine
+	STORE  L2X    	  ; input to distance estimation subroutine
+	LOAD	Point12Y
+	SUB		Point11Y
+	STORE  m16sA		; Converting Feet to ticks
+	LOAD   TicksPerFoot
+	STORE  m16sB
+	CALL   Mult16s
+	LOAD   mres16sL
+	STORE  AtanY      ; input to atan subroutine
+	STORE  L2Y        ; input to distance estimation subroutine
+	CALL   Atan2      ; find the angle
+	STORE  CurrAng
+	CALL   L2Estimate ; estimate the distance
+	STORE  CurrDist
+	SUB	   OneFoot
+	STORE OneFootLess
+	CALL TurnCCWandForward
+	JUMP Die
+	
+	
 Die:
 ; Sometimes it's useful to permanently stop execution.
 ; This will also catch the execution if it accidentally
@@ -174,7 +482,7 @@ Ini:
   OUT RVelCmd
   LOADI -100
   OUT LVelCmd
-  JPOS Ini
+  JUMP Ini
 
 TurnCCW:
   LOAD CurrAng
@@ -269,7 +577,8 @@ P0:
 	STORE NextPointY
 	;LOAD Point1R
 	;STORE NextPointRank
-	LOADI 1
+	;LOADI 1
+	LOADI 1 ;temp!
 	STORE CurrPoint
 	RETURN
 P1:
@@ -1021,24 +1330,24 @@ Point1X: DW 2
 Point1Y: DW 2
 Point1R: DW 4
 
-Point2X: DW 1 
-Point2Y: DW 3 
+Point2X: DW 2 
+Point2Y: DW 4 
 Point2R: DW 5 
 
 Point3X: DW 0 
 Point3Y: DW 4 
 Point3R: DW 2
 
-Point4X: DW -1 
+Point4X: DW -2 
 Point4Y: DW 4 
 Point4R: DW 1
 
-Point5X: DW -1 
+Point5X: DW -2 
 Point5Y: DW 0 
 Point5R: DW 6
 
 Point6X: DW 0 
-Point6Y: DW -1 
+Point6Y: DW -2 
 Point6R: DW 7
 
 Point7X: DW 2 
