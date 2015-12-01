@@ -137,10 +137,6 @@ SetupDifferencePoint:
   RETURN
 
 Rotate:
-  LOADI 1
-  STORE MoveDirection
-  RETURN ; TODO stubbed
-
   LOAD DifferencePointX
   STORE AtanX
   
@@ -207,11 +203,27 @@ Rotate:
 
     CALL CalcDecDeg
     STORE Temp
-
+    
     IN THETA
+    CALL ToRadians
+    SUB Temp
+    JPOS FullSpeedRotWait
 
+  DecelerationRotWait:
+    LOADI 0
+    OUT LVELCMD
+    OUT RVELCMD
+    
+    IN LVEL
+    CALL Abs
+    STORE Mean2Arg
+    IN RVEL
+    CALL Abs
+    CALL Mean2
+    JPOS DecelerationRotWait
+    JNEG DecelerationRotWait
 
-    JUMP FullSpeedRotWait
+  RETURN
 
 MoveDirection: DW 0 ; 1 is forward, 0 is backward
 AngleDirection: DW 0 ; 1 is CCW, 0 is CW
@@ -839,15 +851,29 @@ ToRadians: ; x * pi / 180
   LOADI 804 ; pi with 8 fractional bits
   STORE m16sB
   CALL Mult16s
-  STORE d16sN
+  STORE d32uNL
+  LOAD mres16sH
+  STORE d32uNH
   LOADI 180
-  STORE d16sD
-  CALL Div16s
-  LOAD dres16sQ 
+  STORE d32uD
+  CALL Div32u
+  LOAD dres32uQ 
   RETURN
 
 FromRadians: ; x * 180 / pi
+  STORE m16sA
+  LOADI 180
+  STORE m16sB
+  CALL Mult16s
+  STORE d32uNL
+  LOAD mres16sH
+  STORE d32uNH
+  LOADI 804 ; pi with 8 fractional bits
+  STORE d32uD
+  CALL Div32u
+  LOAD dres32uQ
   RETURN
+
 ; Subroutine to wait (block) for 1 second
 Wait1:
   OUT    TIMER
@@ -1380,8 +1406,8 @@ d16uT: DW 0
 dres16uQ: DW 0
 dres16uR: DW 0
 
-; returns only low word, requires Div16u (high word is not trivial
-; but easy)
+; returns only low word, requires Div16u and Mult16s (high word is not trivial
+; but easy and also not needed for my use case)
 ; Q = Q_F * R_H + Q_L + (R_H * R_F + R_H + R_L) / D 
 ; R = (R_H * R_F + R_H + R_L) % D
 ; Q_F and R_F are from 65535 / D
@@ -1401,7 +1427,50 @@ Div32u:
   LOAD d32uD
   STORE d16uD
   CALL Div16u
-  
+  LOAD dres16uQ
+  STORE d32uQH
+  LOAD dres16uR
+  STORE d32uRH
+
+  LOAD d32uNL
+  STORE d16uN
+  LOAD d32uD
+  STORE d16uD
+  CALL Div16u
+  LOAD dres16uQ
+  STORE d32uQL
+  LOAD dres16uR
+  STORE d32uRL
+
+  LOAD d32uRF
+  STORE m16sA
+  LOAD d32uRH
+  STORE m16sB
+  CALL Mult16s
+  ; low word already in AC
+  ADD d32uRH
+  ADD d32uRL
+  STORE d16uN
+  LOAD d32uD
+  STORE d16uD
+  CALL Div16u
+  LOAD dres16uQ
+  LOAD d32uTempQ
+  LOAD dres16uR
+  STORE dres32uR
+
+  LOAD d32uQF
+  STORE m16sA
+  LOAD d32uRH
+  STORE m16sB
+  CALL Mult16s
+  ; low word already in AC
+  ADD d32uQL
+  ADD d32uTempQ
+  STORE dres32uQ
+
+  RETURN
+
 d32uNH: DW 0
 d32uNL: DW 0
 d32uD: DW 0
@@ -1411,7 +1480,8 @@ d32uQH: DW 0
 d32uRH: DW 0
 d32uQL: DW 0
 d32uRL: DW 0
-dres32uQL: DW 0
+d32uTempQ: DW 0
+dres32uQ: DW 0
 dres32uR: DW 0
 
 ; Shift by stored value (non-immediate)
@@ -1482,7 +1552,6 @@ Negate:
   XOR    NegOne       ; Flip all bits
   ADDI   1            ; Add one (i.e. negate number)
   RETURN
-
 
 ;*******************************************************************************
 ; Mod180: modulo 180
