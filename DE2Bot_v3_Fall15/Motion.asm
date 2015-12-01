@@ -137,6 +137,8 @@ SetupDifferencePoint:
   RETURN
 
 Rotate:
+  LOADI 1
+  STORE MoveDirection
   RETURN ; TODO stubbed
 
   LOAD DifferencePointX
@@ -1377,6 +1379,40 @@ d16uD: DW 0
 d16uT: DW 0
 dres16uQ: DW 0
 dres16uR: DW 0
+
+; returns only low word, requires Div16u (high word is not trivial
+; but easy)
+; Q = Q_F * R_H + Q_L + (R_H * R_F + R_H + R_L) / D 
+; R = (R_H * R_F + R_H + R_L) % D
+; Q_F and R_F are from 65535 / D
+Div32u:
+  LOAD NegOne
+  STORE d16uN
+  LOAD d32uD
+  STORE d16uD
+  CALL Div16u
+  LOAD dres16uQ
+  STORE d32uQF
+  LOAD dres16uR
+  STORE d32uRF
+
+  LOAD d32uNH
+  STORE d16uN
+  LOAD d32uD
+  STORE d16uD
+  CALL Div16u
+  
+d32uNH: DW 0
+d32uNL: DW 0
+d32uD: DW 0
+d32uQF: DW 0
+d32uRF: DW 0
+d32uQH: DW 0
+d32uRH: DW 0
+d32uQL: DW 0
+d32uRL: DW 0
+dres32uQL: DW 0
+dres32uR: DW 0
 
 ; Shift by stored value (non-immediate)
 ; ShiftStored_N is the Number of times to shift (and direction)
