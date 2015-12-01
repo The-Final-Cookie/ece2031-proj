@@ -100,8 +100,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-
+	CALL Turn
+	LOAD Point1R
+	Call IndicateDest
 	
 	
 	
@@ -132,8 +133,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point2R
+	Call IndicateDest
 	
 	
 	
@@ -163,8 +165,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point3R
+	CALL IndicateDest
 	
 
     
@@ -192,8 +195,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-
+	CALL Turn
+	LOAD Point4R
+	CALL IndicateDest
 	
     
 	LOAD   Point5X
@@ -220,8 +224,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point5R
+	CALL IndicateDest
 	
 	    
 	LOAD   Point6X
@@ -248,8 +253,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point6R
+	CALL IndicateDest
 	
 	    
 	LOAD   Point7X
@@ -276,8 +282,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point7R
+	CALL IndicateDest
 	
 	    
 	LOAD   Point8X
@@ -304,8 +311,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point8R
+	CALL IndicateDest
 	
 	    
 	LOAD   Point9X
@@ -332,8 +340,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-	
+	CALL Turn
+	LOAD Point9R
+	CALL IndicateDest
 	
 	    
 	LOAD   Point10X
@@ -360,9 +369,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-
-	
+	CALL Turn
+	LOAD Point10R
+	CALL IndicateDest
 	    
 	LOAD   Point11X
 	SUB	   Point10X
@@ -388,9 +397,9 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
-
-	
+	CALL Turn
+	LOAD Point11R
+	CALL IndicateDest
 	    
 	LOAD   Point12X
 	SUB	   Point11X
@@ -416,9 +425,11 @@ Main:
 	STORE  CurrDist
 	SUB	   OneFoot
 	STORE OneFootLess
-	CALL TurnCCWandForward
+	CALL Turn
+	LOAD Point12R
+	CALL IndicateDest
 	JUMP Die
-	
+
 	
 Die:
 ; Sometimes it's useful to permanently stop execution.
@@ -443,60 +454,61 @@ Forever:
 ;* Subroutines
 ;***************************************************************
 
-;Turn:    ; Turns CW or CCW depending on Theta and Current Angle
+Turn:    ; Turns CW or CCW depending on Theta and Current Angle
 
 ;Angle robot wants to turn to
-;LOAD CurrAng
-;OUT LCD
+LOAD CurrAng
+OUT LCD
 
-;IN Theta
-;SUB CurrAng
-;JNEG TurnCCW
-;JZERO Waiting
-;JPOS TurnCW
+IN Theta
+SUB CurrAng
+JNEG TurnCCW
+JZERO Waiting
+JPOS TurnCW
 
-;TurnCW:
+TurnCW:
 
- ; LOADI -100 
- ; OUT RVelCmd
- ; LOADI 100
- ; OUT LVelCmd
+  LOADI -100 
+  OUT RVelCmd
+  LOADI 100
+  OUT LVelCmd
   ;Good place to check THETA, to make sure its going in the right direction
-  ;IN THETA
-  ;SUB CurrAng
-  ;JPOS TurnCW
-  ;JNEG Waiting
-  ;JZERO Waiting
-
-TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
-
-Ini:
- ; Good place to check that this stage happens only when turning back to 0 degree mark
-  LOAD CurrAng
-  OUT LCD
   IN THETA
   SUB CurrAng
+  JPOS TurnCW
+  JNEG Waiting
   JZERO Waiting
-  JNEG TurnCCW
-  LOADI 100 
-  OUT RVelCmd
-  LOADI -100
-  OUT LVelCmd
-  JUMP Ini
+
+;TurnCCWandForward:    ; Turns Counter-clockwise to the value of CurrAngle
+
+;Ini:
+ ; Good place to check that this stage happens only when turning back to 0 degree mark
+ ; LOAD CurrAng
+  ;OUT LCD
+ ; IN THETA
+ ; SUB CurrAng
+ ; JZERO Waiting
+ ; JNEG TurnCCW
+  ;LOADI 100 
+  ;OUT RVelCmd
+  ;LOADI -100
+ ; OUT LVelCmd
+ ; JUMP Ini
 
 TurnCCW:
-  LOAD CurrAng
-  OUT LCD
-  LOADI 100 
-  OUT RVelCmd
-  LOADI -100
-  OUT LVelCmd
-  ;Good place to check THETA, to make sure its going in the right direction
   IN THETA
   SUB CurrAng
   JPOS Waiting
   JZERO Waiting
-  JNEG TurnCCW
+  LOAD CurrAng
+  OUT LCD
+  LOADI 100 
+  OUT RVelCmd
+  LOADI -100
+  OUT LVelCmd
+  JUMP TurnCCW
+  ;Good place to check THETA, to make sure its going in the right direction
+
   
  Waiting:
   LOADI 0
@@ -1331,38 +1343,38 @@ Point1Y: DW 2
 Point1R: DW 4
 
 Point2X: DW 2 
-Point2Y: DW 4 
+Point2Y: DW 0 
 Point2R: DW 5 
 
 Point3X: DW 0 
-Point3Y: DW 4 
+Point3Y: DW 0 
 Point3R: DW 2
 
-Point4X: DW -2 
+Point4X: DW 0 
 Point4Y: DW 4 
 Point4R: DW 1
 
-Point5X: DW -2 
-Point5Y: DW 0 
+Point5X: DW 2 
+Point5Y: DW 2 
 Point5R: DW 6
 
 Point6X: DW 0 
-Point6Y: DW -2 
+Point6Y: DW 0 
 Point6R: DW 7
 
-Point7X: DW 2 
-Point7Y: DW 0 
+Point7X: DW -1 
+Point7Y: DW 1 
 Point7R: DW 3
 
-Point8X: DW 3 
-Point8Y: DW -1 
+Point8X: DW -1 
+Point8Y: DW 0 
 Point8R: DW 8
 
-Point9X: DW 2
+Point9X: DW 0
 Point9Y: DW -2 
 Point9R: DW 9
 
-Point10X: DW 0 
+Point10X: DW -1 
 Point10Y: DW -2 
 Point10R: DW 10
 
