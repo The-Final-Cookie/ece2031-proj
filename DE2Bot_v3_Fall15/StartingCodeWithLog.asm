@@ -361,7 +361,7 @@ Main:
 	SUB	   OneFoot
 	STORE OneFootLess
 	CALL TurnCCWandForward
-	JUMP Die
+
 	
 	    
 	LOAD   Point11X
@@ -389,7 +389,7 @@ Main:
 	SUB	   OneFoot
 	STORE OneFootLess
 	CALL TurnCCWandForward
-	JUMP Die
+
 	
 	    
 	LOAD   Point12X
