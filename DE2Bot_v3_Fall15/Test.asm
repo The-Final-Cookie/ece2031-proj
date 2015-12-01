@@ -33,6 +33,23 @@ ORG        &H000       ; Jump table is located in mem 0-4
 ;* Initialization
 ;***************************************************************
 Init:
+  LOADI 23
+  CALL ToRadians
+
+  LOADI 180
+  CALL ToRadians
+
+  LOADI 359
+  CALL ToRadians
+
+  LOADI 0
+  CALL ToRadians
+
+  LOADI 90
+  CALL ToRadians
+
+  LOADI 1
+  OUT XLEDS ; Tell debugger we're done
   ; Always a good idea to make sure the robot
   ; stops in the event of a reset.
   LOAD   Zero

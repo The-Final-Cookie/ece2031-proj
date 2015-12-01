@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
   int bitwidth = parser.getWidth();
 
   SComp scomp(mifData, isCode);
+  scomp.setDebug(true);
   do {
     scomp.stepInstruction();
-    scomp.setDebug(true);
-  } while(scomp.getSevenSeg2() != 0xDEAD);
+  } while(scomp.getXLeds() == 0);
 
   auto omg = scomp.getMemory();
   
