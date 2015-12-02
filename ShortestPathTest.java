@@ -3,6 +3,7 @@
 // Traveling Salesman Distance/Brute Force Solution
 
 import java.util.Random;
+import java.util.Scanner;
 
 public class ShortestPathTest {
 
@@ -10,17 +11,38 @@ public class ShortestPathTest {
   public static int MAXVALUE = 9999999;
 
   public static void main(String[] args) {
+
+
+/*
     Random rand = new Random();
 
     //fill point array with 13 random points
     Point[] allPoints = new Point[13];
 
-    allPoints[0] = new Point(5,5,1);
+    allPoints[0] = new Point(0,0,1);
     for(int i = 1; i < allPoints.length; i++) {
-      int x = rand.nextInt(10) + 1;
-      int y = rand.nextInt(10) + 1;
+      int x = rand.nextInt(11) - 5;
+      int y = rand.nextInt(13) - 6;
       allPoints[i] = new Point(x, y, i+1);
     }
+*/
+
+    Point[] allPoints = new Point[13];
+    allPoints[0] = new Point(0,0,1);
+
+    System.out.println("Enter all of your points one at a time in this format: X Y\n End program with a 888");
+    Scanner s = new Scanner(System.in);
+
+    String x = s.next();
+    int k = 1;
+    while(k < allPoints.length) {
+      String y = s.next();
+      allPoints[k] = new Point(Integer.parseInt(x), Integer.parseInt(y), k+1);
+      k++;
+      x = s.next();
+    }
+
+
 
     //System.out.print("CALCULATING NAIVE DISTANCE SOLUTION: ");
     int displayDistance = 0;
@@ -38,9 +60,9 @@ public class ShortestPathTest {
     }
 
     //DEBUG SETUP
-    //System.out.println("\nAll points: \n"); 
+    System.out.println("\nAll points: \n"); 
     for(int i = 0; i < allPoints.length ; i++) {
-      //System.out.print("(" + allPoints[i].getX() + "," + allPoints[i].getY() + ")" + " ");
+      System.out.print("(" + allPoints[i].getX() + "," + allPoints[i].getY() + ")" + " ");
     }
     //System.out.println("\n\nDistance Matrix: ");
     for(int i = 0; i < distancesBetweenAllPoints.length ; i++) {
@@ -87,12 +109,16 @@ public class ShortestPathTest {
       }
     }
 
-    //System.out.println("\nStarting with POINT no. 1 Ordered points: \n");   
+    System.out.println("\nStarting with POINT no. 1 Ordered points: \n");   
     for(int i = 0; i < orderPoints.length ; i++) {
       if(orderPoints[i] != null) {
-        //System.out.println("POINT NUMBER: " + orderPoints[i].getOrder() + ", (" + orderPoints[i].getX() + "," + orderPoints[i].getY() + ") ,");
+        int val = orderPoints[i].getOrder() -1;
+        System.out.println("POINT" + i + "X: " + orderPoints[i].getX());
+        System.out.println("POINT" + i + "Y: " + orderPoints[i].getY());
+        System.out.println("POINT" + i + "R: " + val + "\n");
+
       } else {
-        //System.out.println(" NULL, ");
+        System.out.println(" NULL, ");
       }
     }
 
@@ -104,8 +130,7 @@ public class ShortestPathTest {
     }
     //System.out.println(greedydisplayDistance);
 
-    int difference = displayDistance - greedydisplayDistance;
-    System.out.println(displayDistance + ", " + greedydisplayDistance + ", " + difference);
+    System.out.println("TOTAL DISTANCE: " + greedydisplayDistance);
 
   }
 
