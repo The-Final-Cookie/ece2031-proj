@@ -524,7 +524,7 @@ TurnCCW:
   STORE OLDPOS
  
  Forward:   ; Moves Forward in a straight line. Moves quickly until DE2Bot is 1 foot away from the destination. 
-  LOADI 350
+  LOADI 400
   OUT LVelCmd
   OUT RVelCmd
   IN LPOS
@@ -1334,57 +1334,45 @@ CurrAng:    DW 0      ; Current Angle
 OLDPOS:     DW 0      ; 
 
 
-Point0X: DW 0 
-Point0Y: DW 0 
-Point0R: DW 0
-
-Point1X: DW 2
-Point1Y: DW 2
-Point1R: DW 4
-
-Point2X: DW 2 
-Point2Y: DW 0 
-Point2R: DW 5 
-
-Point3X: DW 0 
-Point3Y: DW 0 
-Point3R: DW 2
-
-Point4X: DW 0 
-Point4Y: DW 4 
-Point4R: DW 1
-
-Point5X: DW 2 
-Point5Y: DW 2 
-Point5R: DW 6
-
-Point6X: DW 0 
-Point6Y: DW 0 
-Point6R: DW 7
-
-Point7X: DW -1 
-Point7Y: DW 1 
-Point7R: DW 3
-
-Point8X: DW -1 
-Point8Y: DW 0 
-Point8R: DW 8
-
-Point9X: DW 0
-Point9Y: DW -2 
-Point9R: DW 9
-
-Point10X: DW -1 
-Point10Y: DW -2 
-Point10R: DW 10
-
-Point11X: DW -1 
-Point11Y: DW 0 
-Point11R: DW 11
-
-Point12X: DW 0 
-Point12Y: DW 0 
-Point12R: DW 12
+ Point0X: DW 0
+ Point0Y: DW 0
+ Point0R: DW 0
+ Point1X: DW 
+ Point1Y: DW 
+ Point1R: DW 
+ Point2X: DW 
+ Point2Y: DW 
+ Point2R: DW 
+ Point3X: DW 
+ Point3Y: DW 
+ Point3R: DW 
+ Point4X: DW 
+ Point4Y: DW 
+ Point4R: DW 
+ Point5X: DW 
+ Point5Y: DW 
+ Point5R: DW 
+ Point6X: DW 
+ Point6Y: DW 
+ Point6R: DW 
+ Point7X: DW 
+ Point7Y: DW 
+ Point7R: DW 
+ Point8X: DW 
+ Point8Y: DW 
+ Point8R: DW 
+ Point9X: DW 
+ Point9Y: DW 
+ Point9R: DW 
+Point10X: DW 
+Point10Y: DW 
+Point10R: DW 
+Point11X: DW 
+Point11Y: DW 
+Point11R: DW 
+Point12X: DW 
+Point12Y: DW 
+Point12R: DW 
 
 CurrPointX: DW 0
 CurrPointY: DW 0
